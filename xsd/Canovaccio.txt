@@ -1,0 +1,226 @@
+Prima vanno definte le risorse...
+
+URIs:
+Nffgs/2348/
+Nffgs/2348/Nodes/231/
+Nffgs/2348/Links/21/
+Nffgs/2348/NffgPolicies/312/
+Policies/2314
+
+METHODS: POST GET DELETE
+
+-NFFGs->		1    POST: Create ONE Nffg
+				1bis GET: (not taking ALL nffgs because of performances)  
+				  	 PUT: 
+				2 	 DELETE: Delete ALL Nffgs 
+
+-NFFGs->{id}->	3    POST: Verify the policy (point 5.) Idempotent in this case
+				4    GET: Get ONE nffg(take also ALL it links and nodes too)
+				     PUT:  
+				5    DELETE: Delete ONE Nffg
+
+--Nodes->		6    POST: Create a NOde
+				7	 GET: Get all nodes of the nffg
+					 PUT: 
+				8    DELETE: Delete nodes (and links later) 
+
+--Nodes->{id}-> 	 POST: 
+				9	 GET: Get the actual node of the nffg
+					 PUT:
+				10 	 DELETE: Delete the single node and its links
+
+--Links->		11   GET: Get all Links
+					 PUT:
+				12   DELETE: Delete all links 
+				13   POST: Create a Link		
+
+--Links->{id}-> 14	 GET: Get a Link
+					 PUT:
+				15   DELETE: Delete a link
+					 POST:
+
+-Policies-> 	16	 POST: Create a Policy
+				17	 GET: Get the whole policies of all nffgs
+				18	 PATCH: Verify a set of policies already taken and update result  (4.) PUT???? SISTO
+				19	 DELETE: Delete all policies
+
+-Policies->{id}-> 
+				20	 GET: Get a single policy
+			    21	 PUT/PATCH?:  Update a single policy (Meglio utilizzare quale? Put aggiunge...)
+				22   DELETE: Delete a single policy
+					 POST:	
+
+--NffgPolicies->23   GET: Get all policies of the actual nffg
+					 PUT:
+				24   DELETE: Cancellare tutte le policc di u nffg...RIDONDA? 
+					 POST: 
+					 
+METHODS DEFINITIONS
+
+NFFGS
+1) Create an NFFG (NFFGS -> POST Crea Nffg)
+	- POST http://localhost:8080/NffgService/rest/nffgs
+	- Content-Type: application/xml
+	- BODY:
+	<nffg xmlns="http://" name="">
+
+1bis)
+	REQUEST:
+	- GET http://localhost:8080/NffgService/rest/nffgs
+	- Content-Type: application/xml
+
+
+	RESPONSE: 
+	- 200OK
+	- Content-Type: application/xml
+	- BODY: 
+	<nffgs>
+	  <nffg></nffg>
+	   ....	
+	<nffgs>
+	
+
+2) Delete all NFFGs (NFFGS -> DELETE cancella tutti nffgs)
+	request:
+	- DELETE http://localhost:8080/NffgService/rest/nffgs
+	- Content-Type: application/xml
+	
+	reposnse:
+	-204 NO CONTENT
+	- Content-Type: text/plain
+NFFG
+3) Verificare la Policy(5.) (Nffg -> POST Execute verification of one ore more policies passed)
+	- POST http://localhost:8080/NffgService/rest/nffgs/{id}
+	- Content-Type: application/xml
+	- BODY:
+	REQUEST
+	<policies xmlns="">
+	    <reachabilityPolicy>
+			<Source></Source>
+			<Destination></Destination>
+			<isPositive></isPositive>	
+	    </reachabilityPolicy>
+	   <reachabilityPolicy/>
+	</policies>		
+	
+	RESPONSE:
+	- 200 OK
+	- Content-Type: application/xml
+	<policies xmlns="">
+	    <reachabilityPolicy>
+			<Source></Source>
+			<Destination></Destination>
+			<isPositive></isPositive>	
+			<Verification>
+				<Time/>
+				<Message/>
+				<Result/>
+			</Verificiation>		
+		</reachabilityPolicy>
+	    <reachabilityPolicy/>
+	</policies>
+
+4) Get Nffg by ID
+	Request
+	-GET http://localhost:8080/NffgService/rest/nffgs/{id}
+	- Content-Type: application/xml
+
+	Response:
+	- Content-Type: application/xml
+	- BODY: 
+	<nffg xmlns="..." id="...">
+	</nffg> 	
+
+5) DELETE an nffg
+	request:
+	- DELETE http://localhost:8080/NffgService/rest/nffgs/{id}
+	- Content-Type: application/xml SI PUO OMETTERE?
+	
+	response:
+	- 204 NO CONTENT
+	- COntent-Type: text/plain
+
+NODES
+6) POST crea un node
+	request:
+	- POST http://localhost:8080/NffgService/rest/nffgs/{id}/nodes
+	- Content-Type: application/xml
+	- BODY:
+	<node xmlns="" id=" ">
+		<service></service>
+	</node>	
+	
+7) GET all nodes
+	request:
+	- GET http://localhost:8080/NffgService/rest/nffgs/{id}/nodes
+	- Content-Type: application/xml ???
+	
+	response:
+	- 200 OK
+	- Content-Type: application/xml
+	- BODY:
+	<nodes xmlns="">
+		<node id="">
+			<service></service>
+		</node>
+		<node id="">
+			<service></service>
+		</node>
+		...
+	<nodes>
+	
+NODE	
+9) GET a node	
+	request:
+	- GET http://localhost:8080/NffgService/rest/nffgs/{id}/nodes/{id}
+	- Content-Type: application/xml ???
+	
+	response:
+	- 200 OK	
+	- Content-Type: application/xml
+	-BODY:
+	<node xmlns="http://">
+		<service>...</service>
+	</node>
+
+POLICIES
+16) POST create a policy	
+	request:
+	- POST http://localhost:8080/NffgService/rest/policies
+	- Content-Type: application/xml
+	- BODY:
+	<reacabilityPolicy xmlns="" id=" ">
+		...
+	</reachabilityPolicy>
+	oppure
+	<traversalPolicy xmlns="" id=" ">
+		...
+	<traversalPolicy>
+
+18) Verification of one or more policies reachability (4.)
+	- PATCH http://localhost:8080/NffgService/rest/policies
+	- Content-Type: application/xml
+	- BODY:
+	<policies xmln="">
+		<reachabilityPolicy id=""/>		
+		<reachabilityPolicy id=""/>
+	    <reachabilityPolicy id=""/>
+	</policies>
+
+21) Update a single policy	
+	- PATCH http://localhost:8080/NffgService/rest/policies
+	- Content-Type: application/xml
+	- BODY:
+		<reachabilityPolicy xmlns="" id="">
+			solo campi da aggiornare...
+			nel caso dell'aggiornamento del campo virification canscello tutto? SISTO
+		<reacabilityPolicy/>	
+		
+DUBBI:
+1) Scaricare tutto nffg... 
+2) PUT/PATCH?
+3) Result returned to the client in point 4 is not specified
+4) Caricare tutto nffg? opure pezzo per pezzo? Singola risorsa quando faccio una post?
+5) Chiedere namespace
+6) Get vuole un content type?
+
