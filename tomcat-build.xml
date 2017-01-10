@@ -7,7 +7,8 @@
 	
 	<property name="tomcatUsername" value="root" />
 	<property name="tomcatPassword" value="root" />
-	<property name="server.location" location="E:/apache-tomcat-8.0.39" />
+	<!--//<property name="server.location" location="E:/apache-tomcat-8.0.39" /> -->
+	<property name="server.location" location="/usr/local/apache-tomcat-8.5.9" />
 	<property name="tomcatPort" value="8080" />
 	<property name="tomcatUrl" value="http://localhost:${tomcatPort}/manager/text" />
 	

@@ -3,32 +3,49 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="lib" path="lib/aopalliance-repackaged-2.5.0-b05.jar"/>
+	<classpathentry kind="lib" path="lib/codemodel-2.6.jar"/>
 	<classpathentry kind="lib" path="lib/hk2-api-2.5.0-b05.jar"/>
 	<classpathentry kind="lib" path="lib/hk2-locator-2.5.0-b05.jar"/>
 	<classpathentry kind="lib" path="lib/hk2-utils-2.5.0-b05.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-annotations-2.5.4.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-core-2.5.4.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-asl-1.9.11.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.2.0.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-databind-2.5.4.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-jaxrs-base-2.5.4.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-jaxrs-json-provider-2.5.4.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-mapper-asl-1.9.11.jar"/>
 	<classpathentry kind="lib" path="lib/jackson-module-jaxb-annotations-2.5.4.jar"/>
 	<classpathentry kind="lib" path="lib/javassist-3.20.0-GA.jar"/>
 	<classpathentry kind="lib" path="lib/javax.annotation-api-1.2.jar"/>
 	<classpathentry kind="lib" path="lib/javax.inject-2.5.0-b05.jar"/>
 	<classpathentry kind="lib" path="lib/javax.servlet-api-3.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/javax.ws.rs-api-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-api-2.2.12-b140109.1041.jar"/>
 	<classpathentry kind="lib" path="lib/jaxb-api-2.2.7.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-core-2.2.10-b140310.1920.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-runtime-2.2.11.jar"/>
+	<classpathentry kind="lib" path="lib/jaxb-xjc-2.2.10.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-client-1.19.1.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-client.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-common.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-container-servlet-core.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-container-servlet.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-core-1.19.1.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-entity-filtering-2.24.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-guava-2.24.jar"/>
+	<classpathentry kind="lib" path="lib/jersey-guava-2.7.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-media-jaxb.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-media-json-jackson-2.24.jar"/>
 	<classpathentry kind="lib" path="lib/jersey-server.jar"/>
+	<classpathentry kind="lib" path="lib/json-simple-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/jsonschema2pojo-core-0.4.0.jar"/>
+	<classpathentry kind="lib" path="lib/jsr311-api-0.6.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.5.jar"/>
 	<classpathentry kind="lib" path="lib/lab1.jar"/>
+	<classpathentry kind="lib" path="lib/lab2.jar"/>
 	<classpathentry kind="lib" path="lib/lab3.jar"/>
 	<classpathentry kind="lib" path="lib/NFFG.jar"/>
 	<classpathentry kind="lib" path="lib/NFFGRandom.jar"/>
@@ -45,6 +62,9 @@
 	<classpathentry kind="lib" path="lib/swagger-jaxrs_2.10-1.3.5.jar"/>
 	<classpathentry kind="lib" path="lib/swagger-jersey2-jaxrs_2.10-1.3.5.jar"/>
 	<classpathentry kind="lib" path="lib/validation-api-1.1.0.Final.jar"/>
-	<classpathentry kind="lib" path="lib-src/javax.ws.rs-api-2.0.1-sources.jar"/>
+	<classpathentry kind="lib" path="lib/wadl-ant-1.1.6.jar"/>
+	<classpathentry kind="lib" path="lib/wadl-core-1.1.6.jar"/>
+	<classpathentry kind="lib" path="lib/wadl-xslt-1.1.6.jar"/>
+	<classpathentry kind="lib" path="lib/xsom-20140925.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project basedir="." name="sol_build">
+	<description>
+		Script for REST Web Service of the Assignment 3
+		LIB SRC VA AGGIUNTOOOO???
+	</description>
+	
+	<property name="serviceName" value="time" />
+	
+	<property name="root.location" location="." />
+	<property name="src.dir" location="${root.location}/src" />
+	<property name="path.prefix" value="it/polito/dp2/NFFG" />
+	<property name="build.dir" location="${root.location}/build" />
+	<property name="lib.dir" location="${root.location}/lib" />
+	<property name="resources.dir" location="${root.location}/${serviceName}/WebContent" />
+	<property name="web.lib.dir" location="${resources.dir}/WEB-INF/lib" />
+	<property name="gen.dir" location="${root.location}/generated" />
+	<property name="gen-tomcat-service.dir" location="${root.location}/target"/>
+	<property name="gen-war.dir" location="${root.location}/war" />
+	<property name="debug" value="true" />
+	<property name="debuglevel" value="source,lines,vars" />
+	<property name="target" value="1.8" />
+	<property name="source" value="1.8" />
+	<property name="schema.dir" location="${root.location}/xsd" />
+	<property name="Wadl" value="${NEO4JURL}/application.wadl"/>
+	<property name="NEO4JURL" value="http://localhost:${tomcatPort}/Neo4JXML/rest" />
+	<property name="tomcatPort" value="8080"/>
+
+
+	
+	<import file="tomcat-build.xml"/>
+	
+	<path id="classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<!--<fileset dir="${web.lib.dir}">
+			<include name="**/*.jar" />
+		</fileset>-->
+	</path>
+	
+	<target name="init" depends="clean">
+		<!-- make directories -->
+	    <mkdir dir="${build.dir}"/>
+		<mkdir dir="${gen.dir}"/>
+	</target>  
+	
+	<!-- genera server -->
+	<target name="build-service" depends="init, generate-artifacts, generate-bindings">
+		<javac debug="on" 
+	       fork="true"
+	       destdir="${build.dir}" 
+	       srcdir="${src.dir}"
+		   includeantruntime="false"
+		   source="${source}"
+		   target="${target}"
+	 	>
+			<include name="${path.prefix}/lab3/*.java"/>
+			<include name="${path.prefix}/sol3/*.java"/>
+			<classpath>
+				<path refid="classpath" />
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="build-client" depends="init">
+		<ant antfile="${sol.build.filepath}" target="build-client">
+			<property name="basedir" value="${root.location}" />
+		</ant>
+	</target>
+	
+	
+	<!--DELETE BUILD AND GENERATED DIRECTORIES-->
+	<target name="clean" description="Clean build and generated">
+		<delete dir="${build.dir}" />
+		<delete dir="${gen.dir}" />
+		<delete dir="${gen-tomcat-service.dir}"/>		
+	</target>
+	
+	<target name="distclean" depends="clean" description="delete all">
+		<delete dir="${gen-war.dir}" />
+	</target>
+	
+	<!-- define wjc task (WADL to Java) -->
+		<taskdef name="wjc" classname="org.jvnet.ws.wadl2java.WJCTask">
+		   <classpath>
+		   	<fileset dir="${lib.dir}" includes="*.jar" />
+		   </classpath>
+		</taskdef>
+		
+		<!-- PERCHEEE define the client artifacts generation target prendere wadl di neo4j e generare classi di neo4j, client devono -->
+		<target name="generate-artifacts">
+			<mkdir dir="${gen.dir}" />
+		   	<echo message="Compiling the descriptions..." />
+		   	<wjc description="${Wadl}" package="it.polito.dp2.NFFG.sol3"
+		       autoSchemaPackage="false" target="${gen.dir}">
+		     <customizations dir="${root.location}" includes="binding.xjc"/>
+		     <produces dir="${gen.dir}/it/polito/dp2/NFFG/sol3" includes="*.java"/>
+		     <depends dir="${root.location}" includes="build.xml"/>
+		    </wjc>
+		</target>
+	
+	<!-- Target generate-bindings, JAXB compiler from ANT -->
+		<target name="generate-bindings" unless="generate-bindings.notRequired" depends="init,-chk-bindings" description="Generate bindings from schema">
+			<exec executable="xjc" failonerror="true" >
+				<arg value="-d" />
+				<arg value="${gen.dir}" />
+				<arg value="-p" />
+				<arg value="it.polito.dp2.NFFG.sol3.jaxb" />
+				<arg value="${schema.dir}/nffgInfo.xsd" />
+			</exec>
+			<touch file="${gen.dir}/.flagfile" />
+		</target>
+	
+	<!-- Target chk-bindings -->
+		<target name="-chk-bindings">
+			<uptodate property="generate-bindings.notRequired" targetfile="${gen.dir}/.flagfile">
+				<srcfiles dir="${schema.dir}" includes="**/*.xsd" />
+			</uptodate>
+		</target>
+	
+</project>

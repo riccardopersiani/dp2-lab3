@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE xml>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns="http://www.riccardopersiani.com/Schema" xmlns:nffg="http://www.riccardopersiani.com/Schema"
+	targetNamespace="http://www.riccardopersiani.com/Schema"
+	elementFormDefault="qualified">
+
+	<xsd:element name="RootNetwork">
+		<xsd:complexType> <!-- RootNetwork uses this type -->
+			<xsd:sequence>
+				<xsd:element ref="NFFG" maxOccurs="unbounded">
+				</xsd:element>
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="NFFG">
+		<xsd:complexType> <!-- NFFG uses this type -->
+			<xsd:sequence>
+				<xsd:element name="Nodes" type="nffg:NodesType" />
+				<xsd:element name="Links" type="nffg:LinksType" />
+				<xsd:element ref="Policies" minOccurs="0" />
+			</xsd:sequence>
+			<xsd:attribute name="name" type="nffg:InitialCharType"
+				use="required" />
+			<xsd:attribute name="last_update_time" type="xsd:dateTime"
+				use="required" />
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:element name="Policies">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="ReachabilityPolicy" type="nffg:ReachabilityPolicyType"
+					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="TraversalPolicy" type="nffg:TraversalPolicyType"
+					minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
+
+	<xsd:complexType name="NodesType">
+		<xsd:sequence>
+			<xsd:element name="Node" type="nffg:NodeType" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="LinksType">
+		<xsd:sequence>
+			<xsd:element name="Link" type="nffg:LinkType" maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:simpleType name="InitialCharType">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[a-zA-Z]([a-zA-Z0-9])*" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:simpleType name="MessageType">
+		<xsd:restriction base="xsd:string">
+			<xsd:minLength value="1" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+	<xsd:complexType name="NodeType"> <!-- Node uses this type -->
+		<xsd:sequence>
+			<xsd:element name="Service" type="nffg:ServiceType" />
+		</xsd:sequence>
+		<xsd:attribute name="id" type="nffg:InitialCharType"
+			use="required" />
+	</xsd:complexType>
+
+	<xsd:complexType name="LinkType"> <!-- Link uses this type -->
+		<xsd:sequence>
+			<xsd:element name="Source" type="xsd:string" />
+			<xsd:element name="Destination" type="xsd:string" />
+		</xsd:sequence>
+		<xsd:attribute name="id" type="nffg:InitialCharType"
+			use="required" />
+	</xsd:complexType>
+
+	<xsd:complexType name="ReachabilityPolicyType"> <!-- Policy uses this type -->
+		<xsd:sequence>
+			<xsd:element name="Source" type="xsd:string" />
+			<xsd:element name="Destination" type="xsd:string" />
+			<xsd:element name="isPositive" type="xsd:boolean" />
+			<xsd:element name="Verification" type="nffg:VerificationType"
+				minOccurs="0" />
+		</xsd:sequence>
+		<xsd:attribute name="id" type="nffg:InitialCharType"
+			use="required" />
+	</xsd:complexType>
+
+	<xsd:complexType name="TraversalPolicyType">
+		<xsd:complexContent>
+			<xsd:extension base="nffg:ReachabilityPolicyType">
+				<xsd:sequence>
+					<xsd:element name="Devices" type="nffg:DevicesListType" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+
+	<xsd:complexType name="VerificationType"> <!-- Verification uses this type -->
+		<xsd:sequence>
+			<xsd:element name="Time" type="xsd:dateTime" minOccurs="0" />
+			<xsd:element name="Message" type="nffg:MessageType"
+				minOccurs="0" />
+			<xsd:element name="Result" type="xsd:boolean" minOccurs="0" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:complexType name="DevicesListType">
+		<xsd:sequence>
+			<xsd:element name="Device" type="nffg:ServiceType"
+				maxOccurs="unbounded" />
+		</xsd:sequence>
+	</xsd:complexType>
+
+	<xsd:simpleType name="ServiceType"><!-- SingleService in Catalog uses this 
+			type -->
+		<xsd:restriction base="xsd:string">
+			<xsd:enumeration value="Firewall" />
+			<xsd:enumeration value="DPI" />
+			<xsd:enumeration value="NAT" />
+			<xsd:enumeration value="Anti-spam" />
+			<xsd:enumeration value="Web-cache" />
+			<xsd:enumeration value="VPN gateway" />
+			<xsd:enumeration value="Web server" />
+			<xsd:enumeration value="Web client" />
+			<xsd:enumeration value="Mail server" />
+			<xsd:enumeration value="Mail client" />
+		</xsd:restriction>
+	</xsd:simpleType>
+
+</xsd:schema>
