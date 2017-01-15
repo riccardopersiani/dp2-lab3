@@ -35,15 +35,12 @@
 		<fileset dir="${lib.dir}">
 			<include name="**/*.jar" />
 		</fileset>
-		<!--<fileset dir="${web.lib.dir}">
-			<include name="**/*.jar" />
-		</fileset>-->
 	</path>
 	
 	<target name="init" depends="clean">
 		<!-- make directories -->
-	    <mkdir dir="${build.dir}"/>
 		<mkdir dir="${gen.dir}"/>
+		<mkdir dir="${build.dir}"/>
 	</target>  
 	
 	<!-- genera server -->
@@ -51,23 +48,20 @@
 		<javac debug="on" 
 	       fork="true"
 	       destdir="${build.dir}" 
-	       srcdir="${src.dir}"
+	       srcdir="${gen.dir}"
 		   includeantruntime="false"
 		   source="${source}"
 		   target="${target}"
 	 	>
-			<include name="${path.prefix}/lab3/*.java"/>
-			<include name="${path.prefix}/sol3/*.java"/>
+			<include name="${path.prefix}/sol3/service/jaxb/*.java"/>
+			<include name="${path.prefix}/sol3/service/neo4j/*.java"/>
 			<classpath>
 				<path refid="classpath" />
 			</classpath>
 		</javac>
 	</target>
 
-	<target name="build-client" depends="init">
-		<ant antfile="${sol.build.filepath}" target="build-client">
-			<property name="basedir" value="${root.location}" />
-		</ant>
+	<target name="build-client" depends="init, generate-artifacts, generate-bindings">
 	</target>
 	
 	
@@ -75,7 +69,6 @@
 	<target name="clean" description="Clean build and generated">
 		<delete dir="${build.dir}" />
 		<delete dir="${gen.dir}" />
-		<delete dir="${gen-tomcat-service.dir}"/>		
 	</target>
 	
 	<target name="distclean" depends="clean" description="delete all">
@@ -91,12 +84,11 @@
 		
 		<!-- PERCHEEE define the client artifacts generation target prendere wadl di neo4j e generare classi di neo4j, client devono -->
 		<target name="generate-artifacts">
-			<mkdir dir="${gen.dir}" />
 		   	<echo message="Compiling the descriptions..." />
-		   	<wjc description="${Wadl}" package="it.polito.dp2.NFFG.sol3"
+		   	<wjc description="${Wadl}" package="it.polito.dp2.NFFG.sol3.service.neo4j"
 		       autoSchemaPackage="false" target="${gen.dir}">
 		     <customizations dir="${root.location}" includes="binding.xjc"/>
-		     <produces dir="${gen.dir}/it/polito/dp2/NFFG/sol3" includes="*.java"/>
+		     <produces dir="${gen.dir}/it/polito/dp2/NFFG/sol3/service" includes="*.java"/>
 		     <depends dir="${root.location}" includes="build.xml"/>
 		    </wjc>
 		</target>
@@ -107,7 +99,7 @@
 				<arg value="-d" />
 				<arg value="${gen.dir}" />
 				<arg value="-p" />
-				<arg value="it.polito.dp2.NFFG.sol3.jaxb" />
+				<arg value="it.polito.dp2.NFFG.sol3.service.jaxb" />
 				<arg value="${schema.dir}/nffgInfo.xsd" />
 			</exec>
 			<touch file="${gen.dir}/.flagfile" />
