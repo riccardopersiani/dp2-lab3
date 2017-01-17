@@ -2,8 +2,11 @@ package it.polito.dp2.NFFG.sol3.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -206,6 +209,21 @@ public class NffgService {
 	
 	public void removeAllPolicies(){
 		
+	}
+
+	public List<NFFG> getAllNffgs() {
+		List<NFFG> nffgList = new ArrayList<NFFG>();
+		Set<String> list = new HashSet<String>();
+		list  = NffgsDB.getNffgMap().keySet();
+		Iterator<String> iter = list.iterator();
+		
+		/** Send the list of policies to be verified **/
+		while(iter.hasNext()) {
+		     String key = iter.next();
+		     NffgInfo nffgInfo = NffgsDB.getNffgMap().get(key);
+		     nffgList.add(nffgInfo.getNffg());
+		}
+		return nffgList;
 	}
 
 }

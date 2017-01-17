@@ -1,5 +1,8 @@
 package it.polito.dp2.NFFG.sol3.service.resources;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -28,9 +31,11 @@ public class NffgsResource {
 	@ApiResponses(value = {
 			@ApiResponse(code = 200, message = "OK"),
 			@ApiResponse(code = 500, message = "Internal Server Error")})
-	@Produces(MediaType.TEXT_PLAIN)
-	public String test() {
-		return "Nffgs collection is reachable";
+	@Produces(MediaType.APPLICATION_XML)
+	public List<NFFG> getAllNffgsXML() {
+		List<NFFG> nffgsList = new ArrayList<NFFG>();
+		nffgsList = nffgService.getAllNffgs();
+		return nffgsList;
 	}
 
 	@POST 
