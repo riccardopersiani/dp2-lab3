@@ -14,27 +14,23 @@
 		</xsd:complexType>
 	</xsd:element>
 
-	<xsd:element name="NFFG">
+	<xsd:element name="NFFG"> <!-- deve apparire come root element -->
 		<xsd:complexType> <!-- NFFG uses this type -->
 			<xsd:sequence>
 				<xsd:element name="Nodes" type="nffg:NodesType" />
 				<xsd:element name="Links" type="nffg:LinksType" />
 				<xsd:element ref="Policies" minOccurs="0" />
 			</xsd:sequence>
-			<xsd:attribute name="name" type="nffg:InitialCharType"
-				use="required" />
-			<xsd:attribute name="last_update_time" type="xsd:dateTime"
-				use="required" />
+			<xsd:attribute name="name" type="nffg:InitialCharType" use="required" />
+			<xsd:attribute name="last_update_time" type="xsd:dateTime" use="required" />
 		</xsd:complexType>
 	</xsd:element>
 
 	<xsd:element name="Policies">
 		<xsd:complexType>
 			<xsd:sequence>
-				<xsd:element name="ReachabilityPolicy" type="nffg:ReachabilityPolicyType"
-					minOccurs="0" maxOccurs="unbounded" />
-				<xsd:element name="TraversalPolicy" type="nffg:TraversalPolicyType"
-					minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="ReachabilityPolicy" type="nffg:ReachabilityPolicyType" minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="TraversalPolicy" type="nffg:TraversalPolicyType" minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>
@@ -67,7 +63,7 @@
 		<xsd:sequence>
 			<xsd:element name="Service" type="nffg:ServiceType" />
 		</xsd:sequence>
-		<xsd:attribute name="id" type="nffg:InitialCharType"
+		<xsd:attribute name="name" type="nffg:InitialCharType"
 			use="required" />
 	</xsd:complexType>
 
@@ -76,7 +72,7 @@
 			<xsd:element name="Source" type="xsd:string" />
 			<xsd:element name="Destination" type="xsd:string" />
 		</xsd:sequence>
-		<xsd:attribute name="id" type="nffg:InitialCharType"
+		<xsd:attribute name="name" type="nffg:InitialCharType"
 			use="required" />
 	</xsd:complexType>
 
@@ -85,10 +81,21 @@
 			<xsd:element name="Source" type="xsd:string" />
 			<xsd:element name="Destination" type="xsd:string" />
 			<xsd:element name="isPositive" type="xsd:boolean" />
-			<xsd:element name="Verification" type="nffg:VerificationType"
-				minOccurs="0" />
+			<xsd:element name="Verification" type="nffg:VerificationType" minOccurs="0" />
 		</xsd:sequence>
-		<xsd:attribute name="id" type="nffg:InitialCharType"
+		<xsd:attribute name="name" type="nffg:InitialCharType"
+			use="required" />
+	</xsd:complexType>
+	
+	<xsd:complexType name="ReachabilityPolicyType2"> <!-- Policy uses this type -->
+		<xsd:sequence>
+			<xsd:element name="Source" type="xsd:string" />
+			<xsd:element name="Destination" type="xsd:string" />
+			<xsd:element name="Nffg" type="nffg:InitialCharType" />
+			<xsd:element name="isPositive" type="xsd:boolean" />
+			<xsd:element name="Verification" type="nffg:VerificationType" minOccurs="0" />
+		</xsd:sequence>
+		<xsd:attribute name="name" type="nffg:InitialCharType"
 			use="required" />
 	</xsd:complexType>
 
@@ -105,8 +112,7 @@
 	<xsd:complexType name="VerificationType"> <!-- Verification uses this type -->
 		<xsd:sequence>
 			<xsd:element name="Time" type="xsd:dateTime" minOccurs="0" />
-			<xsd:element name="Message" type="nffg:MessageType"
-				minOccurs="0" />
+			<xsd:element name="Message" type="nffg:MessageType" minOccurs="0" />
 			<xsd:element name="Result" type="xsd:boolean" minOccurs="0" />
 		</xsd:sequence>
 	</xsd:complexType>

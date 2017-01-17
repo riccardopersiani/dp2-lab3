@@ -16,6 +16,7 @@ import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
 import it.polito.dp2.NFFG.sol3.service.NffgService;
+import it.polito.dp2.NFFG.sol3.service.jaxb.NFFG;
 
 @Path("/nffgs")
 public class NffgsResource {
@@ -39,9 +40,9 @@ public class NffgsResource {
 			@ApiResponse (code = 500, message = "Internal Server Error")
 	})
 	@Consumes(MediaType.APPLICATION_XML)
-	public Response postNffgsXML(NffgType nffg, @Context UriInfo uriInfo) {
+	public Response postNffgsXML(NFFG nffg, @Context UriInfo uriInfo) {
 		try{
-			nffgService.addNewNffg(nffg);
+			nffgService.LoadOneNffgOnNeo4J(nffg);
 		} catch(Exception e) {
 			return Response.serverError().build();
 		}

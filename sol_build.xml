@@ -39,7 +39,6 @@
 	
 	<target name="init" depends="clean">
 		<!-- make directories -->
-		<mkdir dir="${gen.dir}"/>
 		<mkdir dir="${build.dir}"/>
 	</target>  
 	
@@ -48,7 +47,7 @@
 		<javac debug="on" 
 	       fork="true"
 	       destdir="${build.dir}" 
-	       srcdir="${gen.dir}"
+	       srcdir="${src.dir}"
 		   includeantruntime="false"
 		   source="${source}"
 		   target="${target}"
@@ -68,7 +67,6 @@
 	<!--DELETE BUILD AND GENERATED DIRECTORIES-->
 	<target name="clean" description="Clean build and generated">
 		<delete dir="${build.dir}" />
-		<delete dir="${gen.dir}" />
 	</target>
 	
 	<target name="distclean" depends="clean" description="delete all">
@@ -86,9 +84,9 @@
 		<target name="generate-artifacts">
 		   	<echo message="Compiling the descriptions..." />
 		   	<wjc description="${Wadl}" package="it.polito.dp2.NFFG.sol3.service.neo4j"
-		       autoSchemaPackage="false" target="${gen.dir}">
+		       autoSchemaPackage="false" target="${src.dir}">
 		     <customizations dir="${root.location}" includes="binding.xjc"/>
-		     <produces dir="${gen.dir}/it/polito/dp2/NFFG/sol3/service" includes="*.java"/>
+		     <produces dir="${src.dir}/it/polito/dp2/NFFG/sol3/service/neo4j" includes="*.java"/>
 		     <depends dir="${root.location}" includes="build.xml"/>
 		    </wjc>
 		</target>
@@ -97,12 +95,12 @@
 		<target name="generate-bindings" unless="generate-bindings.notRequired" depends="init,-chk-bindings" description="Generate bindings from schema">
 			<exec executable="xjc" failonerror="true" >
 				<arg value="-d" />
-				<arg value="${gen.dir}" />
+				<arg value="${src.dir}" />
 				<arg value="-p" />
 				<arg value="it.polito.dp2.NFFG.sol3.service.jaxb" />
-				<arg value="${schema.dir}/nffgInfo.xsd" />
+				<arg value="${schema.dir}/nffgVerifier.xsd" />
 			</exec>
-			<touch file="${gen.dir}/.flagfile" />
+			<touch file="${src.dir}/.flagfile" />
 		</target>
 	
 	<!-- Target chk-bindings -->

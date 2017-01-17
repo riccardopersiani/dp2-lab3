@@ -1,33 +1,34 @@
 package it.polito.dp2.NFFG.sol3.service.database;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Map;
-
-import com.sun.xml.bind.v2.schemagen.xmlschema.List;
-
-import it.polito.dp2.NFFG.sol3.service.NffgService;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class NffgsDB {
-	// this is a database class containing a static Map of nffg objects
-	private static Map<Long,NffgService> map = new HashMap<Long,NffgService>();
-	private static long last=0;
+	// the key is the NffgName
+	private static Map<String, NffgInfo> nffgMap = new ConcurrentHashMap<String, NffgInfo>();
 
-	public static Map<Long, NffgService> getMap() {
-		return map;
+	// Returns the Map that contains <NffgName, NffgInfo>
+	public static Map<String, NffgInfo> getNffgMap() {
+		return nffgMap;
 	}
 
-	public static void setMap(Map<Long, NffgService> map) {
-		NffgsDB.map = map;
+
+	// Add an element to the map <NffgName, NffgInfo>
+	public static void addNewNffg(String nffgName, NffgInfo nffgInfo) {
+		nffgMap.put(nffgName, nffgInfo);
 	}
 
-	public static long getNext() {
-		return ++last;
+
+	// Delete an nffg element from the map
+	public static void deleteNffg(String nffgName){
+		nffgMap.remove(nffgName);
 	}
-	
-	public List<NffgType> getAllNffgs() {
-		ArrayList<NffgType> list = new ArrayList<NffgType>(); 
-		
+
+
+	// Delete an nffg element from the map
+	public static void deleteAll(){
+		PoliciesDB.deleteAll();
+		nffgMap.clear();
 	}
 
 }
