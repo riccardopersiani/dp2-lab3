@@ -25,7 +25,7 @@ public class PoliciesResource {
 		NffgService nffgService = new NffgService();
 
 		@GET
-		@ApiOperation(	value = "get the policies", notes = "text plain format")
+		@ApiOperation(	value = "get all policies", notes = "text plain format")
 		@ApiResponses(value = {
 				@ApiResponse(code = 200, message = "OK"),
 				@ApiResponse(code = 500, message = "Internal Server Error")})
@@ -49,8 +49,7 @@ public class PoliciesResource {
 				return Response.serverError().build();
 			}
 			return Response.ok().build();
-		}
-		
+		}		
 		
 		@PUT
 		@ApiOperation ( value = "update a reachability policy", notes = "xml format")
