@@ -5,11 +5,10 @@
 	targetNamespace="http://www.riccardopersiani.com/Schema"
 	elementFormDefault="qualified">
 
-	<xsd:element name="RootNetwork">
+	<xsd:element name="Nffgs">
 		<xsd:complexType> <!-- RootNetwork uses this type -->
 			<xsd:sequence>
-				<xsd:element ref="NFFG" maxOccurs="unbounded">
-				</xsd:element>
+				<xsd:element ref="NFFG" maxOccurs="unbounded"/>
 			</xsd:sequence>
 		</xsd:complexType>
 	</xsd:element>

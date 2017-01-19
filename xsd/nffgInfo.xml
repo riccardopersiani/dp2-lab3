@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE xml>
+<Nffgs xmlns="http://www.riccardopersiani.com/Schema"
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://www.riccardopersiani.com/Schema nffgVerifier.xsd"
+		 >
+	
+	<NFFG name="NFFG1" last_update_time="2016-09-27T03:26:20.000+02:00">
+		<Nodes>
+			<Node name="Node1">
+				<Service>NAT</Service>
+			</Node>
+			<Node name="Node2">
+				<Service>Mail client</Service>
+			</Node>
+			<Node name="Node3">
+				<Service>DPI</Service>
+			</Node>
+			<Node name="Node4">
+				<Service>Mail server</Service>
+			</Node>
+		</Nodes>
+		<Links>
+			<Link name="Link1">
+				<Source>Node1</Source>
+				<Destination>Node2</Destination>			
+			</Link>
+			<Link name="Link2">
+				<Source>Node2</Source>
+				<Destination>Node3</Destination>			
+			</Link>
+			<Link name="Link3">
+				<Source>Node3</Source>
+				<Destination>Node4</Destination>			
+			</Link>
+			<Link name="Link4">
+				<Source>Node4</Source>
+				<Destination>Node3</Destination>			
+			</Link>
+		</Links>	
+		<Policies>
+			<ReachabilityPolicy name="ReachabilityPolicy1">
+				<Source>Node2</Source>
+				<Destination>Node4</Destination>
+				<isPositive>true</isPositive>
+				<Verification>
+					<Time>2016-09-27T03:26:20.000+02:00</Time>
+					<Message>Ok</Message>
+					<Result>true</Result>
+				</Verification> 
+			</ReachabilityPolicy>
+			<ReachabilityPolicy name="ReachabilityPolicy2">
+				<Source>Node2</Source>
+				<Destination>Node4</Destination>
+				<isPositive>true</isPositive>
+			</ReachabilityPolicy>	
+			<TraversalPolicy name="TraversalPolicy1">
+				<Source>Node2</Source>
+				<Destination>Node3</Destination>
+				<isPositive>false</isPositive>			
+				<Verification>
+					<Time>2016-09-27T03:26:20.000+02:00</Time>
+					<Message>The result is false</Message>
+					<Result>false</Result>
+				</Verification> 
+				<Devices>
+					<Device>Mail client</Device>
+				</Devices>
+			</TraversalPolicy>
+		</Policies>
+	</NFFG>
+	
+	<NFFG name="NFFG2" last_update_time="2016-09-27T03:26:20.000+02:00">
+		<Nodes>
+			<Node name="Node1">
+				<Service>NAT</Service>
+			</Node>
+			<Node name="Node2">
+				<Service>Mail client</Service>
+			</Node>
+			<Node name="Node3">
+				<Service>DPI</Service>
+			</Node>
+			<Node name="Node4">
+				<Service>Mail server</Service>
+			</Node>
+		</Nodes>
+		<Links>
+			<Link name="Link1">
+				<Source>Node1</Source>
+				<Destination>Node2</Destination>			
+			</Link>
+			<Link name="Link2">
+				<Source>Node2</Source>
+				<Destination>Node3</Destination>			
+			</Link>
+			<Link name="Link3">
+				<Source>Node3</Source>
+				<Destination>Node4</Destination>			
+			</Link>
+			<Link name="Link4">
+				<Source>Node4</Source>
+				<Destination>Node3</Destination>			
+			</Link>
+		</Links>	
+		<Policies>
+			<ReachabilityPolicy name="ReachabilityPolicy3">
+				<Source>Node2</Source>
+				<Destination>Node4</Destination>
+				<isPositive>true</isPositive>
+			</ReachabilityPolicy>
+			<ReachabilityPolicy name="ReachabilityPolicy4">
+				<Source>Node2</Source>
+				<Destination>Node4</Destination>
+				<isPositive>true</isPositive>
+			</ReachabilityPolicy>	
+			<TraversalPolicy name="TraversalPolicy2">
+				<Source>Node2</Source>
+				<Destination>Node3</Destination>
+				<isPositive>false</isPositive>			
+				<Devices>
+					<Device>Mail client</Device>
+				</Devices>
+			</TraversalPolicy>
+			<TraversalPolicy name="TraversalPolicy3">
+				<Source>Node4</Source>
+				<Destination>Node3</Destination>
+				<isPositive>true</isPositive>	
+				<Verification>
+					<Time>2016-09-27T03:26:20.000+02:00</Time>
+					<Message>Ok</Message>
+					<Result>true</Result>
+				</Verification> 		
+				<Devices>
+					<Device>Mail server</Device>
+				</Devices>
+			</TraversalPolicy>
+		</Policies>
+	</NFFG>
+
+</Nffgs>

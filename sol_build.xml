@@ -26,10 +26,6 @@
 	<property name="Wadl" value="${NEO4JURL}/application.wadl"/>
 	<property name="NEO4JURL" value="http://localhost:${tomcatPort}/Neo4JXML/rest" />
 	<property name="tomcatPort" value="8080"/>
-
-
-	
-	<import file="tomcat-build.xml"/>
 	
 	<path id="classpath">
 		<fileset dir="${lib.dir}">
@@ -52,8 +48,8 @@
 		   source="${source}"
 		   target="${target}"
 	 	>
-			<include name="${path.prefix}/sol3/service/jaxb/*.java"/>
-			<include name="${path.prefix}/sol3/service/neo4j/*.java"/>
+			<include name="${path.prefix}/sol3/service/**/*.java"/>
+
 			<classpath>
 				<path refid="classpath" />
 			</classpath>

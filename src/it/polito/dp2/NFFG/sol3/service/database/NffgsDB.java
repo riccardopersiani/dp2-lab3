@@ -1,6 +1,9 @@
 package it.polito.dp2.NFFG.sol3.service.database;
 
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class NffgsDB {
@@ -29,6 +32,21 @@ public class NffgsDB {
 	public static void deleteAll(){
 		PoliciesDB.deleteAll();
 		nffgMap.clear();
+	}
+	
+	public static void printDB(){
+		System.out.println("Printing NffgsDB...");
+		
+		Set<String> list = new HashSet<String>();
+		list  = nffgMap.keySet();
+		Iterator<String> iter = list.iterator();
+
+
+		/** Send the list of all nffgs **/
+		while(iter.hasNext()) {
+			String key = iter.next();
+			nffgMap.get(key).printInfos();
+		}
 	}
 
 }

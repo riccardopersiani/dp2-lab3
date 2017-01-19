@@ -10,6 +10,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -23,6 +24,7 @@ import com.wordnik.swagger.annotations.ApiResponses;
 import it.polito.dp2.NFFG.sol3.service.NffgService;
 import it.polito.dp2.NFFG.sol3.service.jaxb.ReachabilityPolicyType2;
 
+@Path("/verification")
 public class VerificationServiceResource {
 	// Create an instance of the object that can execute operations
 			NffgService nffgService = new NffgService();
