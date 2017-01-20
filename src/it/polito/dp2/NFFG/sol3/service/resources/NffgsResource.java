@@ -34,8 +34,26 @@ public class NffgsResource {
 	@Produces(MediaType.APPLICATION_XML)
 	public Nffgs getAllNffgsXML() {
 		try{
-		nffgService.printNffgsMap();
-		return nffgService.getAllNffgs();
+			nffgService.printNffgsMap();
+			return nffgService.getAllNffgs();
+		} catch(Exception e) {
+			throw new InternalServerErrorException();
+		}
+	}
+
+	@GET
+	@Path("{NffgID}")
+	@ApiOperation ( value = "get one nffg", notes = "text plain format")
+	@ApiResponses(value = {
+			@ApiResponse (code = 200, message = "0K"),
+			@ApiResponse(code = 404, message = "Not Found"),
+			@ApiResponse (code = 500, message = "Internal Server Error")
+	})
+	@Produces(MediaType.APPLICATION_XML)
+	public NFFG getOneNffgXML(@PathParam("NffgID") String NffgID) {
+		try{
+			nffgService.printNffgsMap();
+			return nffgService.getOneNffg(NffgID);
 		} catch(Exception e) {
 			throw new InternalServerErrorException();
 		}
@@ -52,12 +70,16 @@ public class NffgsResource {
 		try{
 			nffgService.LoadOneNffgOnNeo4J(nffg);
 		} catch(Exception e) {
-			return Response.serverError().build();
+			if(e.getMessage() == "Nffg already stored")
+				return Response.serverError().build();
+			else
+				//TODO Check if this is right
+				return Response.noContent().build();
 		}
 		return Response.ok().build();
-
 	}
 
+	/*
 	@DELETE
 	@ApiOperation ( value = "delete all nffgs", notes = "both...")
 	@ApiResponses(value = {
@@ -71,11 +93,11 @@ public class NffgsResource {
 		} catch(Exception e) {
 			throw new InternalServerErrorException();
 		}
-	}
-	
-	@DELETE
+	}*/
+
+	/*@DELETE
 	@Path("{NffgID}")
-	@ApiOperation ( value = "delete one nffgs", notes = "both...")
+	@ApiOperation ( value = "delete one nffg", notes = "both...")
 	@ApiResponses(value = {
 			@ApiResponse (code = 200, message = "0K"),
 			@ApiResponse(code = 404, message = "Not Found"),
@@ -87,5 +109,5 @@ public class NffgsResource {
 		} catch(Exception e) {
 			throw new InternalServerErrorException();
 		}
-	}
+	}*/
 }

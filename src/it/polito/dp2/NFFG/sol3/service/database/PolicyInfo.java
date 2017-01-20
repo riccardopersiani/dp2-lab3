@@ -3,7 +3,10 @@ package it.polito.dp2.NFFG.sol3.service.database;
 import java.util.List;
 
 import it.polito.dp2.NFFG.sol3.service.jaxb.VerificationType;
+import it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory;
+import it.polito.dp2.NFFG.sol3.service.jaxb.ReachabilityPolicyType2;
 import it.polito.dp2.NFFG.sol3.service.jaxb.ServiceType;
+import it.polito.dp2.NFFG.sol3.service.jaxb.TraversalPolicyType2;
 
 public class PolicyInfo {
 	private String policy_name;
@@ -68,10 +71,35 @@ public class PolicyInfo {
 	}
 
 	public void printInfos(){
-		System.out.println("**Policy Info** Name: "+this.policy_name+", Nffg: "+this.nffg_name+", Src: "+this.policy_source+", Dst: "+this.getDestination()+", isPositive: "+this.isPositive);
-		if(this.verification != null){
-			System.out.println("*Verification* Msg: "+this.verification.getMessage()+", Time: "+this.verification.getTime()+", Result: "+this.verification.isResult());
-		}
+		System.out.print("Policy Name: " + this.policy_name + ", Nffg: " + this.nffg_name+", Src: " + this.policy_source + ", Dst: " + this.getDestination()+", isPositive: " + this.isPositive);
+		if(this.verification != null)
+			System.out.print(", *Verification* Msg: " + this.verification.getMessage() + ", Time: " + this.verification.getTime() + ", Result: " + this.verification.isResult());
+		if(this.devices != null)
+			System.out.print(", *Devices* isEmpty? " + this.getDevices().isEmpty());	
+		System.out.println(".");
+	}
+	
+	public ReachabilityPolicyType2 setReachabilityPolicy(){
+		ReachabilityPolicyType2 rp = new ObjectFactory().createReachabilityPolicyType2();
+		rp.setDestination(this.policy_destination);
+		rp.setIsPositive(this.isPositive);
+		rp.setName(this.policy_name);
+		rp.setNffg(this.nffg_name);
+		rp.setSource(this.policy_source);
+		rp.setVerification(this.verification);
+		return rp;
+	}
+	
+	public TraversalPolicyType2 setTraversalPolicy(){
+		TraversalPolicyType2 rp = new ObjectFactory().createTraversalPolicyType2();
+		rp.setDestination(this.policy_destination);
+		rp.setIsPositive(this.isPositive);
+		rp.setName(this.policy_name);
+		rp.setNffg(this.nffg_name);
+		rp.setSource(this.policy_source);
+		rp.setVerification(this.verification);
+		//TODO
+		return rp;
 	}
 
 }

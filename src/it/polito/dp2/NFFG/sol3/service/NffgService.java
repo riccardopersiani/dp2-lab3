@@ -1,6 +1,7 @@
 package it.polito.dp2.NFFG.sol3.service;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -13,6 +14,9 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import it.polito.dp2.NFFG.sol3.service.database.NffgInfo;
 import it.polito.dp2.NFFG.sol3.service.database.NffgsDB;
@@ -22,9 +26,14 @@ import it.polito.dp2.NFFG.sol3.service.jaxb.LinkType;
 import it.polito.dp2.NFFG.sol3.service.jaxb.NFFG;
 import it.polito.dp2.NFFG.sol3.service.jaxb.Nffgs;
 import it.polito.dp2.NFFG.sol3.service.jaxb.NodeType;
+import it.polito.dp2.NFFG.sol3.service.jaxb.Policies;
+import it.polito.dp2.NFFG.sol3.service.jaxb.PoliciesToBeVerified;
+import it.polito.dp2.NFFG.sol3.service.jaxb.PoliciesVerified;
 import it.polito.dp2.NFFG.sol3.service.jaxb.ReachabilityPolicyType;
 import it.polito.dp2.NFFG.sol3.service.jaxb.ReachabilityPolicyType2;
 import it.polito.dp2.NFFG.sol3.service.jaxb.TraversalPolicyType;
+import it.polito.dp2.NFFG.sol3.service.jaxb.TraversalPolicyType2;
+import it.polito.dp2.NFFG.sol3.service.jaxb.VerificationType;
 import it.polito.dp2.NFFG.sol3.service.neo4j.Labels;
 import it.polito.dp2.NFFG.sol3.service.neo4j.Node;
 import it.polito.dp2.NFFG.sol3.service.neo4j.ObjectFactory;
@@ -62,16 +71,18 @@ public class NffgService {
 	}
 
 
-	public void LoadOneNffgOnNeo4J(NFFG nffg){
-		Map<String, String> nodesMap;
-		Map<String, String> linksMap;
-		Map<String, String> belongsMap;
+	public void LoadOneNffgOnNeo4J(NFFG nffg) throws Exception{
+		Map<String, String> nodesMap = new HashMap<String, String>(); 
+		Map<String, String> linksMap = new HashMap<String, String>(); 
+		Map<String, String> belongsMap = new HashMap<String, String>(); 
+
 		List<NodeType> nodes = new ArrayList<NodeType>();
 		List<LinkType> links = new ArrayList<LinkType>();
 
-		nodesMap = new HashMap<String, String>(); 
-		linksMap = new HashMap<String, String>(); 
-		belongsMap = new HashMap<String, String>(); 
+		if(NffgsDB.getNffgMap().containsKey(nffg.getName())){
+			System.out.println("**** ALERT **** Nffg gia' presente...");
+			throw new Exception("Nffg already stored");
+		}
 
 		try{					
 			WebTarget target = createTarget();
@@ -229,12 +240,12 @@ public class NffgService {
 						rp.getSource(),
 						rp.getDestination(),
 						rp.isIsPositive());
-				PoliciesDB.addNewPolicy(nffg.getName(), policyInfo);
+				PoliciesDB.addNewPolicy(rp.getName(), policyInfo);
 				if(rp.getVerification() != null)
 					policyInfo.setVerification(rp.getVerification());
 				policyInfo.printInfos();
 			}
-			
+
 			/** Store locally the policies **/
 			for(TraversalPolicyType tp : nffg.getPolicies().getTraversalPolicy()){
 				PolicyInfo policyInfo = new PolicyInfo(tp.getName(),
@@ -243,7 +254,7 @@ public class NffgService {
 						tp.getDestination(),
 						tp.isIsPositive(),
 						tp.getDevices().getDevice());
-				PoliciesDB.addNewPolicy(nffg.getName(), policyInfo);
+				PoliciesDB.addNewPolicy(tp.getName(), policyInfo);
 				if(tp.getVerification() != null)
 					policyInfo.setVerification(tp.getVerification());
 				policyInfo.printInfos();
@@ -254,44 +265,9 @@ public class NffgService {
 		}
 	}
 
-	public void sendPolicyVerification(String policy_name, String nffg_name){
-		try{
-
-			WebTarget target = createTarget();
-
-			/** Take the list of all policies **/	
-			PolicyInfo policyInfo = PoliciesDB.getPolicy(policy_name, nffg_name);
-
-			/** Perform the GET to Neo4J in order to obtains the paths list**/
-			Paths response3 = (Paths) target.path("resource")
-					.path("node")
-					.path(policyInfo.getSource())
-					.path("paths")
-					.queryParam("dst", policyInfo.getDestination())
-					.request()
-					.get(Paths.class);
-
-			List<Path> pathList = response3.getPath();
-
-			/** If there at least one path the two nodes are reachable **/
-			if(!pathList.isEmpty()){
-				System.out.println("List<Path> is not empty, reachability policy is verified");
-
-				//TODO policyInfo.getVerification().setTime();			    
-
-				if(policyInfo.getIsPositive() == true)
-					policyInfo.getVerification().setResult(true);
-
-				policyInfo.getVerification().setResult(false);
-			}
-
-		}catch(Exception e){
-			throw e;
-		}
-	}
 
 	public void updatePolicy(ReachabilityPolicyType2 policy) {
-		PoliciesDB.deletePolicy(policy.getName(), policy.getNffg());
+		PoliciesDB.deletePolicy(policy.getName());
 		PolicyInfo policyInfo = new PolicyInfo(policy.getName(),
 				policy.getName(),
 				policy.getSource(),
@@ -303,10 +279,9 @@ public class NffgService {
 		policyInfo.printInfos();
 	}
 
-	public void removeAllPolicies(){
+	public void deleteOnePolicy(String policyName){
 
 	}
-
 
 	public Nffgs getAllNffgs() {
 		Nffgs nffgs = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createNffgs();
@@ -327,6 +302,12 @@ public class NffgService {
 		return nffgs;
 	}
 
+	public NFFG getOneNffg(String nffgName) {
+		NffgInfo nffgInfo = NffgsDB.getNffgMap().get(nffgName);
+		return nffgInfo.getNffg();
+	}
+
+	/*
 	public void deleteOneNffg(String nffg_name) {
 
 		System.out.println("Delete Nffg: "+nffg_name);
@@ -339,7 +320,7 @@ public class NffgService {
 		link_list  = nffgInfo.getLinksMap().keySet();
 		Iterator<String> link_iter = link_list.iterator();
 
-		/** Remove the nffg links from Neo4J **/
+		// Remove the nffg links from Neo4J 
 		while(link_iter.hasNext()) {
 			String link_key = link_iter.next();
 			String linkID = nffgInfo.getLinksMap().get(link_key);
@@ -363,7 +344,7 @@ public class NffgService {
 		belong_list  = nffgInfo.getBelongsMap().keySet();
 		Iterator<String> belong_iter = belong_list.iterator();
 
-		/** Remove the nffg belongs from Neo4J **/
+		// Remove the nffg belongs from Neo4J 
 		while(belong_iter.hasNext()) {
 			String belong_key = belong_iter.next();
 			String belongID = nffgInfo.getBelongsMap().get(belong_key);
@@ -387,7 +368,7 @@ public class NffgService {
 		node_list  = nffgInfo.getNodesMap().keySet();
 		Iterator<String> node_iter = node_list.iterator();
 
-		/** Remove the nffg nodes from Neo4J **/
+		// Remove the nffg nodes from Neo4J
 		while(node_iter.hasNext()) {
 			String node_key = node_iter.next();
 			String nodeID = nffgInfo.getNodesMap().get(node_key);
@@ -422,27 +403,28 @@ public class NffgService {
 			throw e;
 		}
 
-		/** Remove the policies of the nffg from the local cache **/
+		// Remove the policies of the nffg from the local cache 
 		PoliciesDB.deleteNffgPolicies(nffg_name);
-		/** Remove the nffg from the local cache **/
+		// Remove the nffg from the local cache
 		NffgsDB.getNffgMap().remove(nffg_name);
 	}
-
-	public void deleteAllNffgs(){
-		
+	 */
+	/*
+	public void deleteAllNffgs(){	
 		NffgsDB.printDB();
-		
+
 		Set<String> nffg_list = new HashSet<String>();
 		nffg_list  = NffgsDB.getNffgMap().keySet();
 		Iterator<String> nffg_iter = nffg_list.iterator();
 
-		/** Remove all the nffg nodes from Neo4J **/
+		// Remove all the nffg nodes from Neo4J
 		while(nffg_iter.hasNext()) {
 			String nffg_name = nffg_iter.next();
 			this.deleteOneNffg(nffg_name);
 			System.out.println("Deleted "+nffg_name+"...");
 		}
 	}
+	 */
 
 	public void printNffgsMap(){
 		Set<String> list = new HashSet<String>();
@@ -460,6 +442,125 @@ public class NffgService {
 		}
 	}
 
+	public PoliciesVerified verifyPolicies(PoliciesToBeVerified policies) throws Exception {	
+		PolicyInfo policyInfo;
+		PoliciesVerified policies_to_be_returned = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createPoliciesVerified();
+		System.out.println("verifyPolicies method called");
+		List<String> policies_to_verify = policies.getName();
+		
+		for(int i=0; i<policies_to_verify.size(); i++){
+			System.out.println("inside for, policy: "+policies_to_verify.get(i));
+			
+			if(PoliciesDB.getPolicy(policies_to_verify.get(i)).getName() != null){
+				System.out.println("inside if");
+				policyInfo = sendPolicyVerification(policies_to_verify.get(i));
+				
+				if(policyInfo.getDevices() == null){
+					System.out.println("***REACHABILITY POLICY***");
+					ReachabilityPolicyType2 rp = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createReachabilityPolicyType2();
+					rp = policyInfo.setReachabilityPolicy();
+					policies_to_be_returned.getReachabilityPolicy().add(rp);
+				}
+				else{
+					System.out.println("***TRAVERSAL POLICY***");
+					TraversalPolicyType2 rp = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createTraversalPolicyType2();
+					rp = policyInfo.setTraversalPolicy();
+					policies_to_be_returned.getTraversalPolicy().add(rp);
+				}
+			}
+			else{
+				System.out.println("inside if");
+				throw new Exception("Policy not stored in DB");
+			}
+		}
+		return policies_to_be_returned;
+	}
+
+	public PolicyInfo sendPolicyVerification(String policy_name) throws Exception{
+		try{
+			System.out.println("----------------call sendPolicyVerification()");
+
+			WebTarget target = createTarget();
+
+			/** Take the list of all policies **/	
+			PolicyInfo policyInfo = PoliciesDB.getPolicy(policy_name);
+
+			System.out.println("before request to neo4j");
+
+			NffgInfo nffgInfo = NffgsDB.getNffgMap().get(policyInfo.getNffg());
+			String sourceNodeID =nffgInfo.getNodesMap().get(policyInfo.getSource());
+			String destiantionNodeID =nffgInfo.getNodesMap().get(policyInfo.getDestination());
+			/** Perform the GET to Neo4J in order to obtains the paths list**/
+			Paths response3 = (Paths) target.path("resource")
+					.path("node")
+					.path(sourceNodeID)
+					.path("paths")
+					.queryParam("dst", destiantionNodeID)
+					.request()
+					.get(Paths.class);
+
+			System.out.println("send request to neo4j");
+
+			List<Path> pathList = response3.getPath();
+
+			/** If there at least one path the two nodes are reachable **/
+			if(!pathList.isEmpty()){
+				System.out.println("List<Path> is not empty, reachability policy is verified");
+
+				XMLGregorianCalendar xmlGregorianCalendar = calendarToXMLGregorianCalendar(Calendar.getInstance());				
+
+				if(policyInfo.getVerification() == null){
+					System.out.println("Adding verification type");
+					VerificationType verification = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createVerificationType();
+					verification.setMessage("Ok");
+					verification.setTime(xmlGregorianCalendar);
+					verification.setResult(true);
+					policyInfo.setVerification(verification);
+				}
+				policyInfo.getVerification().setTime(xmlGregorianCalendar);			    
+
+				if(policyInfo.getIsPositive() == true){
+					policyInfo.getVerification().setResult(true);
+					policyInfo.getVerification().setMessage("Ok");
+					System.out.println("Policy positive");
+				}
+				else{
+					policyInfo.getVerification().setResult(false);
+					policyInfo.getVerification().setMessage("Ok");
+					System.out.println("Policy negative");
+				}
+				System.out.println("Ritorno policy info");
+				return policyInfo;
+			}
+			else{
+				System.out.println("Policy not verified");
+				throw new Exception();
+			}
+		}catch(Exception e){
+			throw e;
+		}
+	}
+
+	public static XMLGregorianCalendar calendarToXMLGregorianCalendar(Calendar calendar) {
+		try {
+			DatatypeFactory dtf = DatatypeFactory.newInstance();
+			XMLGregorianCalendar xgc = dtf.newXMLGregorianCalendar();
+			xgc.setYear(calendar.get(Calendar.YEAR));
+			xgc.setMonth(calendar.get(Calendar.MONTH) + 1);
+			xgc.setDay(calendar.get(Calendar.DAY_OF_MONTH));
+			xgc.setHour(calendar.get(Calendar.HOUR_OF_DAY));
+			xgc.setMinute(calendar.get(Calendar.MINUTE));
+			xgc.setSecond(calendar.get(Calendar.SECOND));
+			xgc.setMillisecond(calendar.get(Calendar.MILLISECOND));
+			// Calendar ZONE_OFFSET and DST_OFFSET fields are in milliseconds.
+			int offsetInMinutes = (calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET)) / (60 * 1000);
+			xgc.setTimezone(offsetInMinutes);
+			return xgc;
+		} catch (DatatypeConfigurationException e) {
+			System.out.print(e.getMessage());
+			return null;
+		}
+	}
 
 
 }

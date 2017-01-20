@@ -86,6 +86,12 @@
 			use="required" />
 	</xsd:complexType>
 	
+	<xsd:complexType name="PoliciesToBeVerified"> <!-- Policy uses this type -->
+		<xsd:sequence>
+			<xsd:element name="name" type="nffg:InitialCharType" maxOccurs="unbounded"/>
+		</xsd:sequence>
+	</xsd:complexType>
+	
 	<xsd:complexType name="ReachabilityPolicyType2"> <!-- Policy uses this type -->
 		<xsd:sequence>
 			<xsd:element name="Source" type="xsd:string" />
@@ -97,6 +103,25 @@
 		<xsd:attribute name="name" type="nffg:InitialCharType"
 			use="required" />
 	</xsd:complexType>
+	
+	<xsd:complexType name="TraversalPolicyType2">
+		<xsd:complexContent>
+			<xsd:extension base="nffg:ReachabilityPolicyType2">
+				<xsd:sequence>
+					<xsd:element name="Devices" type="nffg:DevicesListType" />
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	
+	<xsd:element name="PoliciesVerified">
+		<xsd:complexType>
+			<xsd:sequence>
+				<xsd:element name="ReachabilityPolicy" type="nffg:ReachabilityPolicyType2" minOccurs="0" maxOccurs="unbounded" />
+				<xsd:element name="TraversalPolicy" type="nffg:TraversalPolicyType2" minOccurs="0" maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+	</xsd:element>
 
 	<xsd:complexType name="TraversalPolicyType">
 		<xsd:complexContent>

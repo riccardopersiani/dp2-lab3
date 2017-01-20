@@ -1,65 +1,37 @@
 package it.polito.dp2.NFFG.sol3.service.database;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 public class PoliciesDB {
-	// The key is the NffgName
-	private static Map<String, List<PolicyInfo>> policiesMap = new ConcurrentHashMap <String, List<PolicyInfo>>();
-	private static List<PolicyInfo> policyList = new ArrayList<PolicyInfo>();
+	// The key is the PolicyID
+	private static Map<String, PolicyInfo> policiesMap = new ConcurrentHashMap <String, PolicyInfo>();
 
 	// Returns the Map that contains <NffgName, List<PolicyInfo>>
-	public Map<String, List<PolicyInfo>> getPoliciesMap() {
-		return policiesMap;
+	public static Map<String, PolicyInfo> getPoliciesMap() {
+		return PoliciesDB.policiesMap;
 	}
 
-	public List<PolicyInfo> getPoliciesList(String NffgName) {
-		return policiesMap.get(NffgName);
+	public static PolicyInfo getPolicy(String policyName) {
+		return PoliciesDB.policiesMap.get(policyName);
 	}
-
 
 	// Add an element to the list inside the map <NffgName, List<PolicyInfo>>
-	public static void addNewPolicy(String nffgName, PolicyInfo policyInfo){
-		if(nffgName == null)
+	public static void addNewPolicy(String policyName, PolicyInfo policyInfo){
+		if(policyName == null)
 			return;
-		//If List inside map is not initialized
-		if(policiesMap.get(nffgName) == null){
-			// Initialize the list and add the first item
-			policyList.add(policyInfo);
-			policiesMap.put(nffgName, policyList);
-		}
-		// If list already exist inside map add the PolicyInfo element to it	
-		policiesMap.get(nffgName).add(policyInfo);
-	}
-
-
-	// Get a policyInfo element from a list of the map
-	public static PolicyInfo getPolicy(String policyName, String nffgName){
-		List<PolicyInfo> policyInfoList = new ArrayList<PolicyInfo>(); 
-		policyInfoList = policiesMap.get(nffgName);
-		for(PolicyInfo pi : policyInfoList){
-			if(pi.getName() != null && pi.getName().contains(policyName));
-			return pi;	
-		}
-		return null;
+		PoliciesDB.policiesMap.put(policyName, policyInfo);
 	}
 
 	// Delete the specified policy element from the list, given by the nffg name, inside the map
-	public static void deletePolicy(String policyName, String NffgName){
-		policiesMap.get(NffgName).remove(policyName);
-	}
-
-	// Delete all the policy elements from the list, given by the nffg name, inside the map
-	public static void deleteNffgPolicies(String nffgName){
-		policiesMap.remove(nffgName);
+	public static void deletePolicy(String policyName){
+		PoliciesDB.policiesMap.remove(policyName);
 	}
 
 	// Delete the specified policy element from the list, given by the nffg name, inside the map
 	public static void deleteAll(){
-		policiesMap.clear();
+		PoliciesDB.policiesMap.clear();
 	}
 
 	//Print all the PolicyInfo elements in
