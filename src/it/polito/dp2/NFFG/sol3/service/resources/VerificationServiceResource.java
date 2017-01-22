@@ -5,7 +5,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -35,7 +34,7 @@ public class VerificationServiceResource {
 					return nffgService.verifyPolicies(policies);
 				} catch(Exception e) {
 					//return Response.serverError().build();
-					System.out.println("**é*************CAHTCH******************");
+					System.out.println("***************CAHTCH******************");
 					throw new Exception();
 				}
 				//return Response.ok().build();

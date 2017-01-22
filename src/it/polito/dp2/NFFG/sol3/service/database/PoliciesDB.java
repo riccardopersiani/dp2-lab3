@@ -14,6 +14,7 @@ public class PoliciesDB {
 	}
 
 	public static PolicyInfo getPolicy(String policyName) {
+		System.out.println("Get policy:" + policyName);
 		return PoliciesDB.policiesMap.get(policyName);
 	}
 
@@ -21,16 +22,19 @@ public class PoliciesDB {
 	public static void addNewPolicy(String policyName, PolicyInfo policyInfo){
 		if(policyName == null)
 			return;
+		System.out.println("Adding policy:" + policyName);
 		PoliciesDB.policiesMap.put(policyName, policyInfo);
 	}
 
 	// Delete the specified policy element from the list, given by the nffg name, inside the map
 	public static void deletePolicy(String policyName){
+		System.out.println("Delete policy: " + policyName);
 		PoliciesDB.policiesMap.remove(policyName);
 	}
 
 	// Delete the specified policy element from the list, given by the nffg name, inside the map
 	public static void deleteAll(){
+		System.out.println("Delete all policies...");
 		PoliciesDB.policiesMap.clear();
 	}
 

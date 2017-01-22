@@ -24,7 +24,9 @@
 	<property name="source" value="1.8" />
 	<property name="schema.dir" location="${root.location}/xsd" />
 	<property name="Wadl" value="${NEO4JURL}/application.wadl"/>
+	<property name="NffgServiceWadl" value="${URL}/application.wadl"/>
 	<property name="NEO4JURL" value="http://localhost:${tomcatPort}/Neo4JXML/rest" />
+	<property name="URL" value="http://localhost:8080/NffgService/rest" />
 	<property name="tomcatPort" value="8080"/>
 	
 	<path id="classpath">
@@ -56,7 +58,22 @@
 		</javac>
 	</target>
 
-	<target name="build-client" depends="init, generate-artifacts, generate-bindings">
+	<target name="build-client" depends="generate-artifacts-client">
+		<javac debug="on" 
+	       fork="true"
+	       destdir="${build.dir}" 
+	       srcdir="${src.dir}"
+		   includeantruntime="false"
+		   source="${source}"
+		   target="${target}"
+	 	>
+			<include name="${path.prefix}/lab3/*.java"/>
+			<include name="${path.prefix}/sol3/client1/**/*.java"/>
+
+			<classpath>
+				<path refid="classpath" />
+			</classpath>
+		</javac>
 	</target>
 	
 	
@@ -83,6 +100,16 @@
 		       autoSchemaPackage="false" target="${src.dir}">
 		     <customizations dir="${root.location}" includes="binding.xjc"/>
 		     <produces dir="${src.dir}/it/polito/dp2/NFFG/sol3/service/neo4j" includes="*.java"/>
+		     <depends dir="${root.location}" includes="build.xml"/>
+		    </wjc>
+		</target>
+	
+	<target name="generate-artifacts-client">
+		   	<echo message="Compiling the descriptions..." />
+		   	<wjc description="${NffgServiceWadl}" package="it.polito.dp2.NFFG.sol3.client1.nffgservice"
+		       autoSchemaPackage="false" target="${src.dir}">
+		     <customizations dir="${root.location}" includes="binding.xjc"/>
+		     <produces dir="${src.dir}/it/polito/dp2/NFFG/sol3/client1/nffgservice" includes="*.java"/>
 		     <depends dir="${root.location}" includes="build.xml"/>
 		    </wjc>
 		</target>

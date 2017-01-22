@@ -1,7 +1,6 @@
 package it.polito.dp2.NFFG.sol3.service.resources;
 
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.POST;
@@ -68,13 +67,11 @@ public class NffgsResource {
 	@Consumes(MediaType.APPLICATION_XML)
 	public Response createNffgXML(NFFG nffg, @Context UriInfo uriInfo) {
 		try{
+			System.out.println("POST REQUEST: Calling LOadOneNffgOnNeo4J(nffg)");
 			nffgService.LoadOneNffgOnNeo4J(nffg);
 		} catch(Exception e) {
-			if(e.getMessage() == "Nffg already stored")
-				return Response.serverError().build();
-			else
-				//TODO Check if this is right
-				return Response.noContent().build();
+			throw new InternalServerErrorException();
+			//TODO fare il check dell'nffg
 		}
 		return Response.ok().build();
 	}
