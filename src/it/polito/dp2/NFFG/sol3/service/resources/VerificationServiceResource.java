@@ -1,6 +1,7 @@
 package it.polito.dp2.NFFG.sol3.service.resources;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
@@ -33,10 +34,8 @@ public class VerificationServiceResource {
 				try{
 					return nffgService.verifyPolicies(policies);
 				} catch(Exception e) {
-					//return Response.serverError().build();
 					System.out.println("***************CAHTCH******************");
-					throw new Exception();
+					throw new InternalServerErrorException();
 				}
-				//return Response.ok().build();
 			}
 }

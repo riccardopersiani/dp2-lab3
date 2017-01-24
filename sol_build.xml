@@ -58,7 +58,7 @@
 		</javac>
 	</target>
 
-	<target name="build-client" depends="generate-artifacts-client">
+	<target name="build-client" depends="build-client2, generate-artifacts-client ">
 		<javac debug="on" 
 	       fork="true"
 	       destdir="${build.dir}" 
@@ -70,11 +70,30 @@
 			<include name="${path.prefix}/lab3/*.java"/>
 			<include name="${path.prefix}/sol3/client1/**/*.java"/>
 
+
 			<classpath>
 				<path refid="classpath" />
 			</classpath>
 		</javac>
 	</target>
+	
+	<target name="build-client2" depends="generate-artifacts-client2">
+			<javac debug="on" 
+		       fork="true"
+		       destdir="${build.dir}" 
+		       srcdir="${src.dir}"
+			   includeantruntime="false"
+			   source="${source}"
+			   target="${target}"
+		 	>
+				<include name="${path.prefix}/lab3/*.java"/>
+				<include name="${path.prefix}/sol3/client2/**/*.java"/>
+
+				<classpath>
+					<path refid="classpath" />
+				</classpath>
+			</javac>
+		</target>
 	
 	
 	<!--DELETE BUILD AND GENERATED DIRECTORIES-->
@@ -113,6 +132,16 @@
 		     <depends dir="${root.location}" includes="build.xml"/>
 		    </wjc>
 		</target>
+	
+	<target name="generate-artifacts-client2">
+			   	<echo message="Compiling the descriptions..." />
+			   	<wjc description="${NffgServiceWadl}" package="it.polito.dp2.NFFG.sol3.client2.nffgservice"
+			       autoSchemaPackage="false" target="${src.dir}">
+			     <customizations dir="${root.location}" includes="binding.xjc"/>
+			     <produces dir="${src.dir}/it/polito/dp2/NFFG/sol3/client2/nffgservice" includes="*.java"/>
+			     <depends dir="${root.location}" includes="build.xml"/>
+			    </wjc>
+			</target>
 	
 	<!-- Target generate-bindings, JAXB compiler from ANT -->
 		<target name="generate-bindings" unless="generate-bindings.notRequired" depends="init,-chk-bindings" description="Generate bindings from schema">

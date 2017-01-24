@@ -51,7 +51,7 @@ public class NffgsResource {
 	@Produces(MediaType.APPLICATION_XML)
 	public NFFG getOneNffgXML(@PathParam("NffgID") String NffgID) {
 		try{
-			nffgService.printNffgsMap();
+			//nffgService.printNffgsMap();
 			return nffgService.getOneNffg(NffgID);
 		} catch(Exception e) {
 			throw new InternalServerErrorException();

@@ -22,7 +22,7 @@ public class PoliciesDB {
 	public static void addNewPolicy(String policyName, PolicyInfo policyInfo){
 		if(policyName == null)
 			return;
-		System.out.println("Adding policy:" + policyName);
+		//System.out.println("Adding policy:" + policyName);
 		PoliciesDB.policiesMap.put(policyName, policyInfo);
 	}
 
