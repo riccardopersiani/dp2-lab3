@@ -11,10 +11,11 @@ import it.polito.dp2.NFFG.sol3.service.jaxb.NFFG;
 public class NffgInfo {
 	private String name;
 	private String id;
-	private NFFG nffg;
 	private Map<String,String> nodes = new ConcurrentHashMap<String,String>();
 	private Map<String,String> links = new ConcurrentHashMap<String,String>();
 	private Map<String,String> belongs = new ConcurrentHashMap<String,String>();
+	private NFFG nffg;
+
 
 	public NffgInfo(String name, String id, NFFG nffg, Map<String,String> nodes, Map<String,String> links,Map<String,String> belongs){
 		this.name = name;
@@ -49,20 +50,29 @@ public class NffgInfo {
 		return belongs;
 	}
 
-	public void deleteReachabilityPolicyFromNffg(String policyName){
+	public synchronized void deleteReachabilityPolicyFromNffg(String policyName){
 		for(int i=0; i<nffg.getPolicies().getReachabilityPolicy().size(); i++){
 			if(nffg.getPolicies().getReachabilityPolicy().get(i).getName().equals(policyName)){
 				nffg.getPolicies().getReachabilityPolicy().remove(i);
 			}
 		}
 	}
-	
-	public void deleteTraversalPolicyFromNffg(String policyName){
+
+	public synchronized void deleteTraversalPolicyFromNffg(String policyName){
 		for(int i=0; i<nffg.getPolicies().getTraversalPolicy().size(); i++){
 			if(nffg.getPolicies().getTraversalPolicy().get(i).getName().equals(policyName)){
 				nffg.getPolicies().getTraversalPolicy().remove(i);
 			}
 		}
+	}
+	
+	public boolean isTraversalPolicy(String policyName){
+		for(int i=0; i<nffg.getPolicies().getTraversalPolicy().size();i++){
+			if(nffg.getPolicies().getTraversalPolicy().get(i).getName().equals(policyName)){
+				return true;
+			}
+		}	
+		return false;
 	}
 
 	public void printInfos(){
@@ -86,15 +96,6 @@ public class NffgInfo {
 			String key2 = iter2.next();
 			System.out.println("Link:"+this.links.get(key2));
 		}
-	}
-	
-	public boolean isTraversalPolicy(String policyName){
-		for(int i=0; i<nffg.getPolicies().getTraversalPolicy().size();i++){
-			if(nffg.getPolicies().getTraversalPolicy().get(i).getName().equals(policyName)){
-				return true;
-			}
-		}	
-		return false;
 	}
 
 }

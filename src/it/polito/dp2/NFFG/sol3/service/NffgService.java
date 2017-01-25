@@ -31,7 +31,6 @@ import it.polito.dp2.NFFG.sol3.service.jaxb.PoliciesVerified;
 import it.polito.dp2.NFFG.sol3.service.jaxb.Policy;
 import it.polito.dp2.NFFG.sol3.service.jaxb.ReachabilityPolicyType;
 import it.polito.dp2.NFFG.sol3.service.jaxb.ReachabilityPolicyType2;
-import it.polito.dp2.NFFG.sol3.service.jaxb.ServiceType;
 import it.polito.dp2.NFFG.sol3.service.jaxb.TraversalPolicyType;
 import it.polito.dp2.NFFG.sol3.service.jaxb.TraversalPolicyType2;
 import it.polito.dp2.NFFG.sol3.service.jaxb.VerificationType;
@@ -45,93 +44,98 @@ import it.polito.dp2.NFFG.sol3.service.neo4j.Relationship;
 
 public class NffgService {
 
-	//private  List<TraversalPolicyType> policies = Policies.getAllPolicies(); 
 
-	// Store the new policy in the DB
-	public void addNewPolicy(Policy policy_to_add) {
-		System.out.println("Adding new policy...");
+	/** Add a policy in the PoliciesDB and in the NffgsDB 
+	 * @throws Exception **/
+	public void addNewPolicy(Policy policy_to_add) throws Exception {
 
+		// Check if the policy to be added is a Reachability Policy
 		if(policy_to_add.getTraversalPolicy() == null){
 
-			if(policy_to_add.getReachabilityPolicy()== null){
-				System.out.println("Policy is void...");
-				//TODO
-			}
-
-			System.out.println("Reachability policy ready to be added...");
+			// Check if there is a ReachabilityPolicy
+			if(policy_to_add.getReachabilityPolicy() == null)
+				throw new Exception("Not found"); 
+			
+			// Create a new ReachabilityPolicy
 			ReachabilityPolicyType2 reachability_policy = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createReachabilityPolicyType2();
 			reachability_policy = policy_to_add.getReachabilityPolicy();
+
+			// Check if the Reachability Policy is still in the database, if yes do not add it
+			if(PoliciesDB.getPoliciesMap().containsKey(reachability_policy.getName()) == true){
+				PoliciesDB.getPoliciesMap().remove(reachability_policy.getName());				
+			}
+
+			// Check if the nffg inside Reachability Policy exists, if no do not add it
+			if(NffgsDB.getNffgMap().containsKey(reachability_policy.getNffg()) == false){
+				throw new Exception("Nffg Not found"); 
+			}
+
+			// Create a new PolicyInfo and store it in the PoliciesDB
 			PolicyInfo policyInfo = new PolicyInfo(reachability_policy.getName(), reachability_policy.getNffg(), reachability_policy.getSource(), reachability_policy.getDestination(), reachability_policy.isIsPositive());
 			PoliciesDB.addNewPolicy(reachability_policy.getName(), policyInfo);
 
-			// Save the new policy inside the nffg
+			// Get the NffgInfo element related to the policy in order to Update the NffgsDB
 			NffgInfo nffgInfo = NffgsDB.getNffgMap().get(reachability_policy.getNffg());
+
+			// The new policy must be stored in NffgsDB with ReachabilityPolicyType because we don't need nffg info stored inside the policy to be added
 			ReachabilityPolicyType reachability_policy_nffg = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createReachabilityPolicyType();
 			reachability_policy_nffg.setDestination(reachability_policy.getDestination());
 			reachability_policy_nffg.setName(reachability_policy.getName());
 			reachability_policy_nffg.setSource(reachability_policy.getSource());
 			reachability_policy_nffg.setIsPositive(reachability_policy.isIsPositive());
 
+			// Check if the verification field of the policy is not empty, if not set the verification data
 			if(reachability_policy.getVerification() != null){
 				reachability_policy_nffg.setVerification(reachability_policy.getVerification());
+				policyInfo.setVerification(reachability_policy.getVerification());
 			}
+
+			// Update the NffgsDB adding the new policy to the related nffg
 			nffgInfo.getNffg().getPolicies().getReachabilityPolicy().add(reachability_policy_nffg);
 
-			/*if(reachability_policy.getVerification() != null){
-				//TODO da correggere
-				reachability_policy.getVerification().setTime(updateTime());
-			}*/
-
-			policyInfo.setVerification(reachability_policy.getVerification());
-			policyInfo.printInfos();
 		}
+		// The policy to be added is a Traversal Policy
 		else{
-			System.out.println("Traversal policy ready to be added...");
+			// Create a new TraversalPolicy
 			TraversalPolicyType2 traversal_policy = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createTraversalPolicyType2();
 			traversal_policy = policy_to_add.getTraversalPolicy();
+
+			// Check if the Traversal Policy is still in the database, if yes do not add it
+			if(PoliciesDB.getPoliciesMap().containsKey(traversal_policy.getName()) == true)
+				PoliciesDB.getPoliciesMap().remove(traversal_policy.getName());				
+
+			// Check if the nffg inside Traversal Policy exists, if no do not add it
+			if(NffgsDB.getNffgMap().containsKey(traversal_policy.getNffg()) == false){
+				throw new Exception("Not found"); 
+			}
+
+			// Create a new PolicyInfo and store it in the PoliciesDB
 			PolicyInfo policyInfo = new PolicyInfo(traversal_policy.getName(), traversal_policy.getNffg(), traversal_policy.getSource(), traversal_policy.getDestination(), traversal_policy.isIsPositive(),traversal_policy.getDevices());
 			PoliciesDB.addNewPolicy(traversal_policy.getName(), policyInfo);
 
-			// Save the new policy inside the nffg
-
+			// Get the NffgInfo element related to the policy in order to Update the NffgsDB
 			NffgInfo nffgInfo = NffgsDB.getNffgMap().get(traversal_policy.getNffg());
+
+			// The new policy must be stored in NffgsDB with TraversalPolicyType because we don't need nffg info stored inside the policy to be added
 			TraversalPolicyType traversal_policy_nffg = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createTraversalPolicyType();
 			traversal_policy_nffg.setDestination(traversal_policy.getDestination());
 			traversal_policy_nffg.setName(traversal_policy.getName());
 			traversal_policy_nffg.setSource(traversal_policy.getSource());
 			traversal_policy_nffg.setIsPositive(traversal_policy.isIsPositive());
 
+			// Check if the verification field of the policy is not empty, if not set the verification data
 			if(traversal_policy.getVerification() != null){
 				traversal_policy_nffg.setVerification(traversal_policy.getVerification());
+				policyInfo.setVerification(traversal_policy.getVerification());
 			}
+			// Update the NffgsDB adding the new policy to the related nffg
 			nffgInfo.getNffg().getPolicies().getTraversalPolicy().add(traversal_policy_nffg);
-			/*
-			if(traversal_policy.getVerification() != null)
-				traversal_policy.getVerification().setTime(updateTime());
-			 */
-			policyInfo.setVerification(traversal_policy.getVerification());
-			policyInfo.printInfos();
 		}
 	}
 
-	private WebTarget createTarget(){
-		WebTarget target;
-		String property_value = System.getProperty("it.polito.dp2.NFFG.lab3.NEO4JURL");
-
-		Client c = ClientBuilder.newClient();
-
-		// If the property is not set, the default value
-		if(property_value == null)
-			property_value = "http://localhost:8080/Neo4JXML/rest";
-		// If the property is set
-		target = c.target(property_value);
-
-		return target;
-	}
-
-
+	/** Add the selected nffg on Neo4J and add the selected nffg and its relative policies in the cache 
+	 * @throws Exception **/
 	public void LoadOneNffgOnNeo4J(NFFG nffg) throws Exception{
-		System.out.println("Inside LOadOneNffgOnNeo4J(NFFG nffg)...");
 		Map<String, String> nodesMap = new HashMap<String, String>(); 
 		Map<String, String> linksMap = new HashMap<String, String>(); 
 		Map<String, String> belongsMap = new HashMap<String, String>(); 
@@ -140,47 +144,38 @@ public class NffgService {
 		List<LinkType> links = new ArrayList<LinkType>();
 
 		if(NffgsDB.getNffgMap().containsKey(nffg.getName())){
-			System.out.println("**** ALERT **** Nffg gia' presente...");
 			throw new Exception("Nffg already stored");
 		}
 
 		try{			
-			System.out.println("Creating Web Target...");
-			WebTarget target = createTarget();
-
-			/** Send the Nffg node to Neo4J **/
-			Node nffg_node = new ObjectFactory().createNode();
+			// Create and set the Property element to be attached to the NffgNode
 			Property nffg_property = new ObjectFactory().createProperty();
-
 			nffg_property.setName("name");
 			nffg_property.setValue(nffg.getName());
+
+			// Create the NffgNode element and attach the Property element
+			Node nffg_node = new ObjectFactory().createNode();
 			nffg_node.getProperty().add(nffg_property);
 
-			//System.out.println("Adding the nffg node...");
-
-			//System.out.println("NffgNode POST...");
+			// Send the NffgNode to Neo4J 
+			WebTarget target = createTarget();
 			Node response1 = target.path("resource")
 					.path("node")
 					.request(MediaType.APPLICATION_XML)
 					.post(Entity.entity(nffg_node, MediaType.APPLICATION_XML),Node.class);
 
-			// Save every node in my node map
+			// Save NffgNode in node map
 			nodesMap.put(nffg.getName(),response1.getId());
-
-			//System.out.println("Adding all nodes and all belongs of the nffg "+response1.getId()+"...");
-
-		}catch (Exception e){
-			throw e;
+		}catch (RuntimeException e){
+			throw new Exception("Internal Server Error");
 		}
+
 		try{
-			System.out.println("Adding the nffg labels to the nffg "+nodesMap.get(nffg.getName())+"...");
-
+			// Create the Labels element related to the nffg
 			Labels nffg_label = new ObjectFactory().createLabels();
-
 			nffg_label.getValue().add("NFFG");
 
-			//System.out.println("NffgLabel POST...");
-			// Create new label in Neo4J
+			// Send the nffg Label to Neo4J
 			WebTarget target = createTarget();
 			target.path("resource")
 			.path("node")
@@ -188,226 +183,200 @@ public class NffgService {
 			.path("label")
 			.request(MediaType.APPLICATION_XML)
 			.post(Entity.entity(nffg_label, MediaType.APPLICATION_XML));
-
-			//System.out.println("NffgLabel POST DONE!!");
-
-		}catch(Exception e){
-			throw e;
+		}catch (RuntimeException e){
+			throw new Exception("Internal Server Error");
 		}
-		try{
-			/** Take the list of all nodes and links from the nffg **/
-			nodes = nffg.getNodes().getNode();
-			links = nffg.getLinks().getLink();
 
-			/** Send every node and every belongs to Neo4J **/
-			for(NodeType n : nodes){
+		// Take the list of all nodes and links from the nffg
+		nodes = nffg.getNodes().getNode();
+		links = nffg.getLinks().getLink();
 
-				//System.out.println("Sending single node storage request, node: "+n.getName()+"...");
-
-				Node node = new ObjectFactory().createNode();
+		/* Send every Node and every belongs to Neo4J */
+		for(NodeType n : nodes){
+			try{
+				// Create and set the Property element to be attached to the Node	
 				Property property = new ObjectFactory().createProperty();
-
 				property.setName("name");
 				property.setValue(n.getName());
+
+				// Create the Node element and attach the Property element
+				Node node = new ObjectFactory().createNode();
 				node.getProperty().add(property);
 
-				// Create new node in Neo4J
+				// Send the Node to Neo4J
 				WebTarget target = createTarget();
 				Node response2 = target.path("resource")
 						.path("node")
 						.request(MediaType.APPLICATION_XML)
 						.post(Entity.entity(node, MediaType.APPLICATION_XML),Node.class);
 
-				// Save every node in my node map
+				// Save every node in node map
 				nodesMap.put(n.getName(),response2.getId());
-
+			}catch(RuntimeException e){
+				throw new Exception("Internal Server Error");
+			}
+			try{
+				// Create the Labels element related to the node
 				Labels node_label = new ObjectFactory().createLabels();		
-
-				ServiceType serviceType = n.getService();
-				if(n.getService() == null){
-					System.out.println("SERVICE E' NULLLLLLLLLLLLL.. ");
-				}
-
-				//String value = n.getService().value();
-				//System.out.println("********BEFORE ADD VALUE SERCICAKLç DAS******: "+n.getService().value().toString());
-
 				node_label.getValue().add(n.getService().value().toString());
 
-				//System.out.println("Adding the node labels to the node BEFORE POST... ");
-				// Create new label in Neo4J
-				WebTarget target3 = createTarget();
-				target3.path("resource")
+				// Send the node Label in Neo4J
+				WebTarget target2 = createTarget();
+				target2.path("resource")
 				.path("node")
 				.path(nodesMap.get(n.getName()))
 				.path("label")
 				.request(MediaType.APPLICATION_XML)
 				.post(Entity.entity(node_label, MediaType.APPLICATION_XML));
-				//System.out.println("Adding the node labels to the node AFTER POST... ");
+			}catch(RuntimeException e){
+				throw new Exception("Internal Server Error");
+			}
 
-
-				//System.out.println("Sending single belong storage request, node "+nodesMap.get(n.getName())+"...");
-
+			try{
+				// Create and set the Relationship "Belongs" element where the source is the nffg
 				Relationship nffg_relationship = new ObjectFactory().createRelationship();
-
-				// Set new relationship parameters
 				nffg_relationship.setDstNode(nodesMap.get(n.getName()));
 				nffg_relationship.setType("belongs");
 
-				// Create new relationship in Neo4J
-				WebTarget target2 = createTarget();
-				Relationship response3 = target2.path("resource")
+				// Send the Relationship "Belongs" to Neo4J
+				WebTarget target3 = createTarget();
+				Relationship response3 = target3.path("resource")
 						.path("node")
 						.path(nodesMap.get(nffg.getName()))
 						.path("relationship")
 						.request(MediaType.APPLICATION_XML)
 						.post(Entity.entity(nffg_relationship, MediaType.APPLICATION_XML), Relationship.class);	
 
-				//System.out.println("Storing data in maps...");
-
-				// Save every belongs in my belongs map
+				// Save every belongs in belongs map
 				belongsMap.put(n.getName(),response3.getId());
+			}catch(RuntimeException e){
+				throw new Exception("Internal Server Error");
 			}
+		}
 
-			//System.out.println("Adding all links of the nffg...");
+		/* Send every link to Neo4J */
+		for(LinkType l: links){
 
-			/** Send every link to Neo4J **/
-			for(LinkType l: links){
+			try{
+			// Create and set the Relationship "Link" element
+			Relationship relationship = new ObjectFactory().createRelationship();
+			relationship.setDstNode(nodesMap.get(l.getDestination()));
+			relationship.setType("Link");
 
-				//System.out.println("Sending single link storage request, link: "+l.getName()+"...");
+			// Send the Relationship "Link" to Neo4J
+			WebTarget target = createTarget();
+			Relationship response4 = target.path("resource")
+					.path("node")
+					.path(nodesMap.get(l.getSource()))
+					.path("relationship")
+					.request(MediaType.APPLICATION_XML)
+					.post(Entity.entity(relationship, MediaType.APPLICATION_XML), Relationship.class);	
 
-				Relationship relationship = new ObjectFactory().createRelationship();
-
-				// Set new relationship parameters
-				relationship.setDstNode(nodesMap.get(l.getDestination()));
-				relationship.setType("Link");
-
-				//System.out.println("Sending single link storage request BEFORE POST");
-				// Create new relationship in Neo4J
-				WebTarget target = createTarget();
-				Relationship response4 = target.path("resource")
-						.path("node")
-						.path(nodesMap.get(l.getSource()))
-						.path("relationship")
-						.request(MediaType.APPLICATION_XML)
-						.post(Entity.entity(relationship, MediaType.APPLICATION_XML), Relationship.class);	
-
-				//System.out.println("Sending single link storage request AFTER POST");
-				// Save every link in my link map
-				linksMap.put(l.getName(), response4.getId());
-			}				
-
-			// Create the NffgInfo Object
-			NffgInfo nffgInfo = new NffgInfo(nffg.getName(),nodesMap.get(nffg.getName()),nffg,nodesMap, linksMap, belongsMap);
-			// Update the attribute last_update_time 
-			nffgInfo.getNffg().setLastUpdateTime(updateTime());
-			// Add the nffg to the nffg database
-			NffgsDB.addNewNffg(nffg.getName(), nffgInfo);	
-
-			//System.out.println("Adding to DB nffg: "+nffg.getName()+" and its NffginfoID: "+nffgInfo.getId());
-
-			//NffgsDB.printDB();
-
-			//System.out.println("NFFG added to the map, the actual map size is: " + NffgsDB.getNffgMap().size());
-
-			if(nffg.getPolicies() == null){
-				System.out.println("There are no policies");
+			// Save every link in links map
+			linksMap.put(l.getName(), response4.getId());
+			}catch(RuntimeException e){
+				throw new Exception("Internal Server Error");
 			}
-			else{
-				System.out.println("There are:" + nffg.getPolicies().getReachabilityPolicy().size()+ " reach policies");
-				System.out.println("There are:" + nffg.getPolicies().getTraversalPolicy().size()+ " trav policies");
-				/** Store locally the reachability policies **/
-				for(ReachabilityPolicyType rp : nffg.getPolicies().getReachabilityPolicy()){
-					PolicyInfo policyInfo = new PolicyInfo(rp.getName(),
-							nffg.getName(),
-							rp.getSource(),
-							rp.getDestination(),
-							rp.isIsPositive());
-					PoliciesDB.addNewPolicy(rp.getName(), policyInfo);
-					if(rp.getVerification() != null)
-						policyInfo.setVerification(rp.getVerification());
-					policyInfo.printInfos();
-				}
+		}				
 
-				/** Store locally the policies **/
-				for(TraversalPolicyType tp : nffg.getPolicies().getTraversalPolicy()){
-					PolicyInfo policyInfo = new PolicyInfo(tp.getName(),
-							nffg.getName(),
-							tp.getSource(),
-							tp.getDestination(),
-							tp.isIsPositive(),
-							tp.getDevices());
-					PoliciesDB.addNewPolicy(tp.getName(), policyInfo);
-					if(tp.getVerification() != null)
-						policyInfo.setVerification(tp.getVerification());
-					policyInfo.printInfos();
-				}
+		// Create the NffgInfo Object and update the attribute last_update_time
+		NffgInfo nffgInfo = new NffgInfo(nffg.getName(),nodesMap.get(nffg.getName()),nffg,nodesMap, linksMap, belongsMap);	
+		nffgInfo.getNffg().setLastUpdateTime(updateTime());
+
+		// Add the Nffg to the nffg database
+		NffgsDB.addNewNffg(nffg.getName(), nffgInfo);	
+
+		if(nffg.getPolicies() != null){
+			// Store in PoliciesDB the Reachability Policies
+			for(ReachabilityPolicyType rp : nffg.getPolicies().getReachabilityPolicy()){
+				PolicyInfo policyInfo = new PolicyInfo(rp.getName(), nffg.getName(), rp.getSource(), rp.getDestination(), rp.isIsPositive());
+				PoliciesDB.addNewPolicy(rp.getName(), policyInfo);
+				if(rp.getVerification() != null)
+					policyInfo.setVerification(rp.getVerification());
 			}
-
-		}catch(Exception e){
-			throw e;
+			// Store in PoliciesDB the Traversal Policies
+			for(TraversalPolicyType tp : nffg.getPolicies().getTraversalPolicy()){
+				PolicyInfo policyInfo = new PolicyInfo(tp.getName(), nffg.getName(), tp.getSource(), tp.getDestination(), tp.isIsPositive(), tp.getDevices());
+				PoliciesDB.addNewPolicy(tp.getName(), policyInfo);
+				if(tp.getVerification() != null)
+					policyInfo.setVerification(tp.getVerification());
+			}
 		}
 	}
 
 
-
-
-	public void updatePolicy(Policy policy_to_update) {
-		ReachabilityPolicyType2 policy = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createTraversalPolicyType2();
-
-		// If it is a reachability policy
+	/** Update the selected policy in NffgsDb and PoliciesDB 
+	 * @throws Exception **/
+	public void updatePolicy(Policy policy_to_update) throws Exception {
+		ReachabilityPolicyType2 policy = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createTraversalPolicyType2();		
+		
+		// If it is a Reachability policy, delete it inside NffgDB
 		if(policy_to_update.getReachabilityPolicy() != null){
-			System.out.println("Reachability policy ready to be udated...");
-			policy = policy_to_update.getReachabilityPolicy();
+			policy = policy_to_update.getReachabilityPolicy();			
+			//deleteOnePolicy(policy.getName());
 			NffgsDB.getNffgMap().get(policy.getNffg()).deleteReachabilityPolicyFromNffg(policy.getName());
-			// If it is a traversal policy
-		} else{
-			System.out.println("Traversal policy ready to be udated...");
-			policy = policy_to_update.getTraversalPolicy();
-			NffgsDB.getNffgMap().get(policy.getNffg()).deleteTraversalPolicyFromNffg(policy.getName());
 
+			// If it is a Traversal policy, delete it inside NffgDB
+		} else{
+			policy = policy_to_update.getTraversalPolicy();
+			if(policy == null){
+				throw new Exception("Not Found");
+			}
+			//deleteOnePolicy(policy.getName());
+			NffgsDB.getNffgMap().get(policy.getNffg()).deleteTraversalPolicyFromNffg(policy.getName());
 		}
+		// Delete the policy inside the PoliciesDB
 		PoliciesDB.deletePolicy(policy.getName());
-		addNewPolicy(policy_to_update);
+		try {
+			addNewPolicy(policy_to_update);
+		} catch (RuntimeException e) {
+			throw new Exception("Internal Server Error");
+		}
 	}
 
-	public void deleteOnePolicy(String policyName){
-		boolean reachability = false;
-		System.out.println("Delete function called...");
 
+	/** Delete the selected policy in NffgsDB and PoliciesDB
+	 * @throws Exception **/
+	public void deleteOnePolicy(String policyName) throws Exception{
+
+		// Check if the policy is not in the PolicyDB
+		if(PoliciesDB.getPolicy(policyName) == null){
+			throw new Exception("Not found");
+		}
+
+		// Take the containers in which the policy must be deleted
 		PolicyInfo policyInfo = PoliciesDB.getPolicy(policyName);
-		System.out.println("Delete function in nffg: ..."+policyInfo.getNffg());
-
 		NffgInfo nffgInfo = NffgsDB.getNffgMap().get(policyInfo.getNffg());
 
+		// Check if the policy is reachable
 		for(int i =0; i<nffgInfo.getNffg().getPolicies().getReachabilityPolicy().size(); i++){
 			if(nffgInfo.getNffg().getPolicies().getReachabilityPolicy().get(i).getName().equals(policyName)){
-				reachability = true;
+				// Delete Reachability policy in NffgsDB
+				NffgsDB.getNffgMap().get(policyInfo.getNffg()).deleteReachabilityPolicyFromNffg(policyName);
 			}
+			else{
+				// Delete Traversal policy in NffgsDB
+				NffgsDB.getNffgMap().get(policyInfo.getNffg()).deleteTraversalPolicyFromNffg(policyName);
+			}	
 		}
 
-		if(reachability == true){
-			System.out.println("Delete REACHABILITY...");
-			NffgsDB.getNffgMap().get(policyInfo.getNffg()).deleteReachabilityPolicyFromNffg(policyName);
-		}
-		else{
-			System.out.println("Delete TRAVERSAL...");
-			NffgsDB.getNffgMap().get(policyInfo.getNffg()).deleteTraversalPolicyFromNffg(policyName);
-		}
+		//Delete the policy inside the PoliciesDB
 		PoliciesDB.deletePolicy(policyName);
 	}
 
+	/** Get all the Nffgs stored in the database **/
+
+	/** Get the list of all the nffgs **/
 	public Nffgs getAllNffgs() {
+		// Create the Nffgs element that will contail all the nffgs
 		Nffgs nffgs = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createNffgs();
 
 		Set<String> list = new HashSet<String>();
 		list  = NffgsDB.getNffgMap().keySet();
 		Iterator<String> iter = list.iterator();
 
-		System.out.println("Before the while, size: " + NffgsDB.getNffgMap().size());
-
-		/** Send the list of all nffgs **/
+		// Put In the list of all Nffgs
 		while(iter.hasNext()) {
-			System.out.println("Inside the while");
 			String key = iter.next();
 			NffgInfo nffgInfo = NffgsDB.getNffgMap().get(key);
 			nffgs.getNFFG().add(nffgInfo.getNffg());
@@ -415,130 +384,15 @@ public class NffgService {
 		return nffgs;
 	}
 
+	/** Get the Nffg requested from the database **/
 	public NFFG getOneNffg(String nffgName) {
 		NffgInfo nffgInfo = NffgsDB.getNffgMap().get(nffgName);
 		return nffgInfo.getNffg();
 	}
 
-	/*
-	public void deleteOneNffg(String nffg_name) {
 
-		System.out.println("Delete Nffg: "+nffg_name);
-
-		NffgInfo nffgInfo = NffgsDB.getNffgMap().get(nffg_name);
-		nffgInfo.printInfos();
-		String nffg_id = nffgInfo.getId();
-
-		Set<String> link_list = new HashSet<String>();
-		link_list  = nffgInfo.getLinksMap().keySet();
-		Iterator<String> link_iter = link_list.iterator();
-
-		// Remove the nffg links from Neo4J 
-		while(link_iter.hasNext()) {
-			String link_key = link_iter.next();
-			String linkID = nffgInfo.getLinksMap().get(link_key);
-			try{
-
-				System.out.println("Delete Link: "+link_key+" with LinkID:"+linkID);
-
-				// Delete Links			
-				WebTarget target = createTarget();
-				target.path("resource")
-				.path("relationship")
-				.path(linkID)
-				.request()
-				.delete();
-			}catch(Exception e){
-				throw e;
-			}
-		}
-
-		Set<String> belong_list = new HashSet<String>();
-		belong_list  = nffgInfo.getBelongsMap().keySet();
-		Iterator<String> belong_iter = belong_list.iterator();
-
-		// Remove the nffg belongs from Neo4J 
-		while(belong_iter.hasNext()) {
-			String belong_key = belong_iter.next();
-			String belongID = nffgInfo.getBelongsMap().get(belong_key);
-			try{
-
-				System.out.println("Delete Belong: "+belong_key+" with BelongID:"+belongID);
-
-				// Delete Belongs			
-				WebTarget target = createTarget();
-				target.path("resource")
-				.path("relationship")
-				.path(belongID)
-				.request()
-				.delete();
-			}catch(Exception e){
-				throw e;
-			}
-		}
-
-		Set<String> node_list = new HashSet<String>();
-		node_list  = nffgInfo.getNodesMap().keySet();
-		Iterator<String> node_iter = node_list.iterator();
-
-		// Remove the nffg nodes from Neo4J
-		while(node_iter.hasNext()) {
-			String node_key = node_iter.next();
-			String nodeID = nffgInfo.getNodesMap().get(node_key);
-			try{
-				if(nodeID != nffg_id){
-					System.out.println("Delete Node: "+node_key+" with NodeID: "+nodeID);
-					// Delete Nodes	different from nffg node		
-					WebTarget target = createTarget();
-					target.path("resource")
-					.path("node")
-					.path(nodeID)
-					.request(MediaType.APPLICATION_XML)
-					.delete();
-				}
-
-			}catch(Exception e){
-				throw e;
-			}
-		}
-
-		try{
-			System.out.println("Delete NffgNode: "+nffg_name+" with NffgNodeID: "+nffg_id);
-
-			// Delete Nffg node
-			WebTarget target = createTarget();
-			target.path("resource")
-			.path("node")
-			.path(nffg_id)
-			.request(MediaType.APPLICATION_XML)
-			.delete();
-		}catch(Exception e){
-			throw e;
-		}
-
-		// Remove the policies of the nffg from the local cache 
-		PoliciesDB.deleteNffgPolicies(nffg_name);
-		// Remove the nffg from the local cache
-		NffgsDB.getNffgMap().remove(nffg_name);
-	}
-	 */
-	/*
-	public void deleteAllNffgs(){	
-		NffgsDB.printDB();
-
-		Set<String> nffg_list = new HashSet<String>();
-		nffg_list  = NffgsDB.getNffgMap().keySet();
-		Iterator<String> nffg_iter = nffg_list.iterator();
-
-		// Remove all the nffg nodes from Neo4J
-		while(nffg_iter.hasNext()) {
-			String nffg_name = nffg_iter.next();
-			this.deleteOneNffg(nffg_name);
-			System.out.println("Deleted "+nffg_name+"...");
-		}
-	}
-	 */
-
+	/**Print some information about every Nffg in the NffgsDB
+	 * Created for debugging purposes **/ 
 	public void printNffgsMap(){
 		Set<String> list = new HashSet<String>();
 		list  = NffgsDB.getNffgMap().keySet();
@@ -546,7 +400,6 @@ public class NffgService {
 
 		System.out.println("Map Size: " + NffgsDB.getNffgMap().size());
 
-		/** Send the list of all nffgs **/
 		while(iter.hasNext()) {
 			System.out.println("Inside the while");
 			String key = iter.next();
@@ -555,55 +408,56 @@ public class NffgService {
 		}
 	}
 
+
+	/** Verify the list of policies specified **/
 	public PoliciesVerified verifyPolicies(PoliciesToBeVerified policies) throws Exception {	
-		PolicyInfo policyInfo;
-		PoliciesVerified policies_to_be_returned = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createPoliciesVerified();
-		System.out.println("verifyPolicies method called");
+		// Get the list of the names of the policies to be verified 
 		List<String> policies_to_verify = policies.getName();
-		System.out.println("scrolling the policies to verify, size: "+policies_to_verify.size());
+
+		PolicyInfo policyInfo = null;
+		PoliciesVerified policies_to_be_returned = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createPoliciesVerified();
+
+		// Verify every policy in the list
 		for(int i=0; i<policies_to_verify.size(); i++){
-			System.out.println("inside for, policy: "+policies_to_verify.get(i));
 
 			if(PoliciesDB.getPolicy(policies_to_verify.get(i)) != null){
-				System.out.println("inside if");
 				policyInfo = sendPolicyVerification(policies_to_verify.get(i));
 
+				// Check if the policy to be returned is a Reachability policy
 				if(policyInfo.getDevices() == null){
-					System.out.println("***REACHABILITY POLICY***");
 					ReachabilityPolicyType2 rp = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createReachabilityPolicyType2();
 					rp = policyInfo.getReachabilityPolicy();
 					policies_to_be_returned.getReachabilityPolicy().add(rp);
 				}
+				// Check if the policy to be returned is a Traversal policy
 				else{
-					System.out.println("***TRAVERSAL POLICY***");
 					TraversalPolicyType2 rp = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createTraversalPolicyType2();
 					rp = policyInfo.getTraversalPolicy();
 					policies_to_be_returned.getTraversalPolicy().add(rp);
 				}
 			}
 			else{
-				System.out.println("inside if");
-				throw new Exception("Policy not stored in DB");
+				throw new Exception("Not found");
 			}
 		}
 		return policies_to_be_returned;
 	}
 
-	public PolicyInfo sendPolicyVerification(String policy_name){
+
+	/** Send the policy verification requedt to Neo4J
+	 * @throws Exception **/
+	public PolicyInfo sendPolicyVerification(String policy_name) throws Exception{
 		try{
-			System.out.println("----------------call sendPolicyVerification()");
-
-			WebTarget target = createTarget();
-
-			/** Take the list of all policies **/	
+			// Take the list of all policiesS
 			PolicyInfo policyInfo = PoliciesDB.getPolicy(policy_name);
-			System.out.println("Policy to be verified: "+policyInfo.getName());
 
+			// Get the NffgInfo from the database in order to take the names of source and destination node of the policy to be verifed
 			NffgInfo nffgInfo = NffgsDB.getNffgMap().get(policyInfo.getNffg());
 			String sourceNodeID = nffgInfo.getNodesMap().get(policyInfo.getSource());
 			String destiantionNodeID =nffgInfo.getNodesMap().get(policyInfo.getDestination());
 
-			/** Perform the GET to Neo4J in order to obtains the paths list**/
+			// Send the data to be verified to Neo4J
+			WebTarget target = createTarget();
 			Paths response3 = (Paths) target.path("resource")
 					.path("node")
 					.path(sourceNodeID)
@@ -611,223 +465,227 @@ public class NffgService {
 					.queryParam("dst", destiantionNodeID)
 					.request()
 					.get(Paths.class);
-
-			System.out.println("send request to neo4j");
-
+			
 			List<Path> pathList = response3.getPath();
-
-			System.out.println("getting the path list neo4j with size" + pathList.size());
-
-			/** If there at least one path the two nodes are reachable **/
+			
+			// If there at least one Path the two nodes are reachable 
 			if(pathList.isEmpty() == false){
-				System.out.println("List<Path> is not empty, policy is verified");
 
+				// Adding the Verification if the policy have not one
 				if(policyInfo.getVerification() == null){
-					System.out.println("Adding verification type");
 					VerificationType verification = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createVerificationType();
 					policyInfo.setVerification(verification);
+
 					//Setting the new verification in the nffgDB
 					NffgInfo nffgInfoVerification = NffgsDB.getNffgMap().get(policyInfo.getNffg());
-					//reachability
-					System.out.println("BEFORE THE DB IF");
 
+					//The verification to be stored is related to a ReachabilityPolicy
 					if(nffgInfoVerification.isTraversalPolicy(policy_name) == false){
-						System.out.println("IF REACHABILITY");
 
 						for(int i=0; i<nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().size(); i++){
-							System.out.println("FOR REACHABILITY scorro la policy: "+nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getName());
 
 							if(nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getName().equals(policy_name)){
-								System.out.println("POLICY FOUND IN LIST");
 								nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).setVerification(verification);
-								System.out.println("After Set VERIFICATION");
-								nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setTime(updateTime());
-								System.out.println("After Set Time");
+								verification = nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification();
+								verification.setTime(updateTime());
 
 								if(policyInfo.getIsPositive() == true){
-									System.out.println("Policy positive DBBBB");
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Positive");
-									System.out.println("After Set Message");
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setResult(true);
-									System.out.println("After Set Result");
-
+									verification.setMessage("Policy is Positive and Reachable");
+									verification.setResult(true);
 								}
 								else{
-									System.out.println("Policy negative DBBBB");
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setResult(false);
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Negative");					
+									verification.setMessage("Policy is Negative and Reachable");					
+									verification.setResult(false);
 								}
 							}
 						}
-					}else{//traversal
-						System.out.println("ELSE TRAVERSAL");
+					}
+					//The verification to be stored is related to a TraversalPolicy
+					else{
 						for(int i=0; i<nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().size(); i++){
+
 							if(nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getName().equals(policyInfo.getName())){
 								nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).setVerification(verification);
-								nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setTime(updateTime());
+								verification = nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification();
+								verification.setTime(updateTime());
 								if(policyInfo.getIsPositive() == true){
-									System.out.println("Policy positive DB TRAVERSAL");
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setResult(true);
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Positive");
-								}else{
-									System.out.println("Policy negative DB TRAVERSAL");
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setResult(false);
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Negative");					
+									verification.setMessage("Policy is Positive and Reachable");
+									verification.setResult(true);
+								}
+								else{
+									verification.setMessage("Policy is Negative and Reachable");		
+									verification.setResult(false);
 								}
 							}
 						}
 					}
-				}else{
-
-					//Verification is not null 
-
+				}
+				// Verification field is not null 
+				else{
 					NffgInfo nffgInfoVerification = NffgsDB.getNffgMap().get(policyInfo.getNffg());
-					//reachability
-					System.out.println("BEFORE THE DB IF");
 
+					//The verification to be updated is related to a ReachabilityPolicy
 					if(nffgInfoVerification.isTraversalPolicy(policy_name) == false){
-						System.out.println("IF REACHABILITY");
 
 						for(int i=0; i<nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().size(); i++){
-							System.out.println("FOR REACHABILITY scorro la policy: "+nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getName());
 
 							if(nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getName().equals(policy_name)){
-								System.out.println("POLICY FOUND IN LIST");
 								nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setTime(updateTime());
-								System.out.println("After Set Time");
 
 								if(policyInfo.getIsPositive() == true){
-									System.out.println("Policy positive DBBBB");
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Positive");
-									System.out.println("After Set Message");
+									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Policy is Positive and Reachable");
 									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setResult(true);
-									System.out.println("After Set Result");
-
 								}
 								else{
-									System.out.println("Policy negative DBBBB");
 									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setResult(false);
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Negative");					
+									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Policy is Negative and Reachable");					
 								}
 							}
 						}
-					}else{//traversal
-						System.out.println("ELSE TRAVERSAL");
+					}
+					//The verification to be updated is related to a TraversalPolicy
+					else{
 						for(int i=0; i<nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().size(); i++){
 							if(nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getName().equals(policyInfo.getName())){
 								nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setTime(updateTime());
 								if(policyInfo.getIsPositive() == true){
-									System.out.println("Policy positive DB TRAVERSAL");
 									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setResult(true);
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Positive");
+									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Policy is Positive and Reachable");
 								}else{
-									System.out.println("Policy negative DB TRAVERSAL");
 									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setResult(false);
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Negative");					
+									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Policy is Negative and Reachable");					
 								}
 							}
 						}
-					}
-
-					policyInfo.getVerification().setTime(updateTime());			    
-
-					if(policyInfo.getIsPositive() == true){
-						policyInfo.getVerification().setResult(true);
-						policyInfo.getVerification().setMessage("Ok");
-						System.out.println("Policy positive");
-					}
-					else{
-						policyInfo.getVerification().setResult(false);
-						policyInfo.getVerification().setMessage("policy negative Ok");
-						System.out.println("Policy negative");
-					}
+					}		
 				}
-				System.out.println("Ritorno policy info VERIFICA");
+				// Set the current time for the policies in the PoliciesDB
+				policyInfo.getVerification().setTime(updateTime());			    
+
+				if(policyInfo.getIsPositive() == true){
+					policyInfo.getVerification().setResult(true);
+					policyInfo.getVerification().setMessage("Policy Positive and Reachable");
+				}
+				else{
+					policyInfo.getVerification().setResult(false);
+					policyInfo.getVerification().setMessage("Policy Negative and Reachable");
+				}
+
 				return policyInfo;
 
 			}
+			// The are no Path, the two nodes are unreachable 
 			else{
-				System.out.println("List<Path> is empty, reachability policy is not verified");
 
+				// Adding the Verification if the policy have not one
 				if(policyInfo.getVerification() == null){
-					System.out.println("Adding verification type");
 					VerificationType verification = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createVerificationType();
 					policyInfo.setVerification(verification);
 
+					//Setting the new verification in the nffgDB
 					NffgInfo nffgInfoVerification = NffgsDB.getNffgMap().get(policyInfo.getNffg());
-					//reachability
-					System.out.println("BEFORE THE DB IF");
+
+					//The verification to be stored is related to a ReachabilityPolicy
 					if(nffgInfoVerification.isTraversalPolicy(policy_name) == false){
-						System.out.println("IF REACHABILITY");
 
 						for(int i=0; i<nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().size(); i++){
-							System.out.println("FOR REACHABILITY scorro la policy: "+nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getName());
 
 							if(nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getName().equals(policy_name)){
-								System.out.println("POLICY FOUND IN LIST");
 								nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).setVerification(verification);
-								System.out.println("After Set VERIFICATION");
-								nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setTime(updateTime());
-								System.out.println("After Set Time");
+								verification = nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification();
+								verification.setTime(updateTime());
 
 								if(policyInfo.getIsPositive() == true){
-									System.out.println("Policy positive DBBBB");
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Positive");
-									System.out.println("After Set Message");
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setResult(false);
-									System.out.println("After Set Result");
-
+									verification.setMessage("Policy is Positive and Unreachable");
+									verification.setResult(false);
 								}
 								else{
-									System.out.println("Policy negative DBBBB");
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setResult(true);
-									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Negative");					
+									verification.setMessage("Policy is Negative and Unreachable");					
+									verification.setResult(true);
 								}
 							}
 						}
-					}else{//traversal
-						System.out.println("ELSE TRAVERSAL");
+					}
+					//The verification to be stored is related to a TraversalPolicy
+					else{
 						for(int i=0; i<nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().size(); i++){
+
 							if(nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getName().equals(policyInfo.getName())){
 								nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).setVerification(verification);
-								nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setTime(updateTime());
+								verification = nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification();
+								verification.setTime(updateTime());
 								if(policyInfo.getIsPositive() == true){
-									System.out.println("Policy positive DB TRAVERSAL");
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setResult(false);
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Positive");
-								}else{
-									System.out.println("Policy negative DB TRAVERSAL");
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setResult(true);
-									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Negative");					
+									verification.setMessage("Policy is Positive and Unreachable");
+									verification.setResult(false);
+								}
+								else{
+									verification.setMessage("Policy is Negative but Unreachable");		
+									verification.setResult(true);
 								}
 							}
 						}
 					}
-				}else{
+				}
+				// Verification to be updated
+				else{
+					NffgInfo nffgInfoVerification = NffgsDB.getNffgMap().get(policyInfo.getNffg());
 
-					policyInfo.getVerification().setTime(updateTime());			    
-					System.out.println("Policy not verified");
-					if(policyInfo.getIsPositive() == true){
-						policyInfo.getVerification().setResult(false);
-						policyInfo.getVerification().setMessage("Policy positive but not reachable");
-						System.out.println("Policy positive");
+					//The verification to be updated is related to a ReachabilityPolicy
+					if(nffgInfoVerification.isTraversalPolicy(policy_name) == false){
+
+						for(int i=0; i<nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().size(); i++){
+
+							if(nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getName().equals(policy_name)){
+								nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setTime(updateTime());
+
+								if(policyInfo.getIsPositive() == true){
+									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Policy is Positive and Unreachable");
+									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setResult(false);
+								}
+								else{
+									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setResult(true);
+									nffgInfoVerification.getNffg().getPolicies().getReachabilityPolicy().get(i).getVerification().setMessage("Policy is Negative and Unreachable");					
+								}
+							}
+						}
 					}
+					//The verification to be updated is related to a TraversalPolicy
 					else{
-						policyInfo.getVerification().setResult(false);
-						policyInfo.getVerification().setMessage("Policy negative but Reachable");
-						System.out.println("Policy negative");
+						for(int i=0; i<nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().size(); i++){
+							if(nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getName().equals(policyInfo.getName())){
+								nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setTime(updateTime());
+								if(policyInfo.getIsPositive() == true){
+									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setResult(false);
+									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Policy is Positive and Unreachable");
+								}else{
+									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setResult(true);
+									nffgInfoVerification.getNffg().getPolicies().getTraversalPolicy().get(i).getVerification().setMessage("Policy is Negative and Unreachable");					
+								}
+							}
+						}
 					}
 				}
-				return policyInfo;
+				// Set the current time for the policies in the PoliciesDB
+				policyInfo.getVerification().setTime(updateTime());			    
 
+				if(policyInfo.getIsPositive() == true){
+					policyInfo.getVerification().setResult(false);
+					policyInfo.getVerification().setMessage("Policy Positive and Unreachable");
+				}
+				else{
+					policyInfo.getVerification().setResult(true);
+					policyInfo.getVerification().setMessage("Policy Negative and Unreachable");
+				}
+
+				return policyInfo;
 			}
 
-		}catch(Exception e){
-			System.out.println("EXCEPRION CATCHED!! SENDPOLICYVERIFICATION");
-			throw e;
+		} catch(RuntimeException e){
+			throw new Exception("Internal Server Error");
 		}
 	}
 
+	/** Convert from type Calendar to XMLGregorialCalendar**/
 	public XMLGregorianCalendar calendarToXMLGregorianCalendar(Calendar calendar) {
 		try {
 			DatatypeFactory dtf = DatatypeFactory.newInstance();
@@ -849,16 +707,17 @@ public class NffgService {
 		}
 	}
 
+	/** Return the current time **/
 	public XMLGregorianCalendar updateTime(){
 		XMLGregorianCalendar xmlGregorianCalendar = calendarToXMLGregorianCalendar(Calendar.getInstance());
 		return xmlGregorianCalendar;
 	}
 
+	/** Get the Policy specified in the request**/	
 	public Policy getPolicy(String policyID) throws Exception {
 		PolicyInfo policyInfo = PoliciesDB.getPolicy(policyID);
 		if(policyInfo == null){
-			System.out.println("Policy does not exist");
-			throw new Exception("Policy does not exist");
+			throw new Exception("Not found");
 		}
 		Policy policy = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createPolicy();
 		if(policyInfo.getDevices() == null){
@@ -868,6 +727,21 @@ public class NffgService {
 			policy.setTraversalPolicy(policyInfo.getTraversalPolicy());
 		}
 		return policy;
+	}
+
+
+	/** Create the target **/
+	private WebTarget createTarget(){
+		WebTarget target;
+		String property_value = System.getProperty("it.polito.dp2.NFFG.lab3.NEO4JURL");
+		Client c = ClientBuilder.newClient();
+
+		// If the property is not set, the default value
+		if(property_value == null)
+			property_value = "http://localhost:8080/Neo4JXML/rest";
+
+		target = c.target(property_value);
+		return target;
 	}
 
 }

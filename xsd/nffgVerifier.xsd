@@ -6,14 +6,26 @@
 	elementFormDefault="qualified">
 
 	<xsd:element name="Nffgs">
-		<xsd:complexType> <!-- RootNetwork uses this type -->
+		<xsd:complexType> <!-- Nffgs uses this type -->
 			<xsd:sequence>
-				<xsd:element ref="NFFG" maxOccurs="unbounded" />
+				<xsd:element ref="NFFG" minOccurs="0" maxOccurs="unbounded" />
 			</xsd:sequence>
 		</xsd:complexType>
+
+		<!-- the (name) of [NFFG] must be globally unique -->
+		<xsd:unique name="oneNffgForEachNffgId">
+			<xsd:selector xpath="nffg:NFFG" />
+			<xsd:field xpath="@name" />
+		</xsd:unique>
+		<!-- (name) in [Policy] must be globally unique -->
+		<xsd:unique name="onePolicyforEachPolicyId">
+			<xsd:selector xpath="nffg:NFFG/nffg:Policies/*" />
+			<xsd:field xpath="@name" />
+		</xsd:unique>
+
 	</xsd:element>
 
-	<xsd:element name="NFFG"> <!-- deve apparire come root element -->
+	<xsd:element name="NFFG">
 		<xsd:complexType> <!-- NFFG uses this type -->
 			<xsd:sequence>
 				<xsd:element name="Nodes" type="nffg:NodesType" />
@@ -25,6 +37,49 @@
 			<xsd:attribute name="last_update_time" type="xsd:dateTime"
 				use="required" />
 		</xsd:complexType>
+
+		<xsd:key name="NodeKey">
+			<xsd:selector xpath="nffg:Nodes/nffg:Node" />
+			<xsd:field xpath="@name" />
+		</xsd:key>
+		<!-- The KEYREF is the element (Source) present [Link] ->(name)[Node] -->
+		<xsd:keyref name="SourceLinkKeyRef" refer="nffg:NodeKey">
+			<xsd:selector xpath="nffg:Links/nffg:Link" />
+			<xsd:field xpath="nffg:Source" />
+		</xsd:keyref>
+		<!-- The KEYREF is the element (Destination) present [Link] ->(name)[Node] -->
+		<xsd:keyref name="DestinationLinkKeyRef" refer="nffg:NodeKey">
+			<xsd:selector xpath="nffg:Links/nffg:Link" />
+			<xsd:field xpath="nffg:Destination" />
+		</xsd:keyref>
+		<!-- The KEYREF is the element (Source) present [ReachabilityPolicy] ->(name)[Node] -->
+		<xsd:keyref name="SourceReachabilityPolicyKeyRef" refer="nffg:NodeKey">
+			<xsd:selector xpath="nffg:Policies/nffg:ReachabilityPolicy" />
+			<xsd:field xpath="nffg:Source" />
+		</xsd:keyref>
+		<!-- The KEYREF is the element (Destination) present [ReachabilityPolicy] 
+			->(name)[Node] -->
+		<xsd:keyref name="DestinationReachabilityPolicyKeyRef"
+			refer="nffg:NodeKey">
+			<xsd:selector xpath="nffg:Policies/nffg:ReachabilityPolicy" />
+			<xsd:field xpath="nffg:Destination" />
+		</xsd:keyref>
+		<!-- The KEYREF is the element (Source) present [TraversalPolicy] ->(name)[Node] -->
+		<xsd:keyref name="SourceTraversalPolicyKeyRef" refer="nffg:NodeKey">
+			<xsd:selector xpath="nffg:Policies/nffg:TraversalPolicy" />
+			<xsd:field xpath="nffg:Source" />
+		</xsd:keyref>
+		<!-- The KEYREF is the element (Destination) present [TraversalPolicy] 
+			->(name)[Node] -->
+		<xsd:keyref name="DestinationTraversalPolicyKeyRef" refer="nffg:NodeKey">
+			<xsd:selector xpath="nffg:Policies/nffg:TraversalPolicy" />
+			<xsd:field xpath="nffg:Destination" />
+		</xsd:keyref>
+		<!-- (name) in [Link] must be unique locally, inside the NFFG -->
+		<xsd:unique name="oneLinkforEachLinkID">
+			<xsd:selector xpath="nffg:Links/nffg:Link" />
+			<xsd:field xpath="@name" />
+		</xsd:unique>
 	</xsd:element>
 
 	<xsd:element name="Policies">
@@ -91,14 +146,19 @@
 			use="required" />
 	</xsd:complexType>
 
-<xsd:element name="PoliciesToBeVerified">
-	<xsd:complexType> <!-- Policy uses this type -->
-		<xsd:sequence>
-			<xsd:element name="name" type="nffg:InitialCharType"
-				maxOccurs="unbounded" />
-		</xsd:sequence>
-	</xsd:complexType>
-</xsd:element>
+	<xsd:element name="PoliciesToBeVerified">
+		<xsd:complexType> <!-- Policy uses this type -->
+			<xsd:sequence>
+				<xsd:element name="name" type="nffg:InitialCharType"
+					maxOccurs="unbounded" />
+			</xsd:sequence>
+		</xsd:complexType>
+		<!-- (name) in [PoliciesToBeVerified] must be unique locally -->
+		<xsd:unique name="PoliciesDifferent">
+			<xsd:selector xpath="nffg:PoliciesToBeVerified" />
+			<xsd:field xpath="@name" />
+		</xsd:unique>
+	</xsd:element>
 
 	<xsd:complexType name="ReachabilityPolicyType2"> <!-- Policy uses this type -->
 		<xsd:sequence>

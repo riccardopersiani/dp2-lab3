@@ -68,18 +68,9 @@ public class PolicyInfo {
 		return this.devices;
 	}
 
-	public void printInfos(){
-		System.out.print("Policy Name: " + this.policy_name + ", Nffg: " + this.nffg_name+", Src: " + this.policy_source + ", Dst: " + this.getDestination()+", isPositive: " + this.isPositive);
-		if(this.verification != null)
-			System.out.print(", *Verification* Msg: " + this.verification.getMessage() + ", Time: " + this.verification.getTime() + ", Result: " + this.verification.isResult());
-		if(this.devices != null)
-			System.out.print(", *Devices* isEmpty? " + this.getDevices().getDevice().isEmpty());	
-		System.out.println(".");
-	}
-	
 	public ReachabilityPolicyType2 getReachabilityPolicy(){
 		ReachabilityPolicyType2 rp = new ObjectFactory().createReachabilityPolicyType2();
-		
+
 		rp.setDestination(this.policy_destination);
 		rp.setIsPositive(this.isPositive);
 		rp.setName(this.policy_name);
@@ -88,7 +79,7 @@ public class PolicyInfo {
 		rp.setVerification(this.verification);
 		return rp;
 	}
-	
+
 	public TraversalPolicyType2 getTraversalPolicy(){
 		TraversalPolicyType2 tp = new ObjectFactory().createTraversalPolicyType2();
 
@@ -100,6 +91,15 @@ public class PolicyInfo {
 		tp.setVerification(this.verification);			
 		tp.setDevices(this.devices);
 		return tp;
+	}
+
+	public void printInfos(){
+		System.out.print("Policy Name: " + this.policy_name + ", Nffg: " + this.nffg_name+", Src: " + this.policy_source + ", Dst: " + this.getDestination()+", isPositive: " + this.isPositive);
+		if(this.verification != null)
+			System.out.print(", *Verification* Msg: " + this.verification.getMessage() + ", Time: " + this.verification.getTime() + ", Result: " + this.verification.isResult());
+		if(this.devices != null)
+			System.out.print(", *Devices* isEmpty? " + this.getDevices().getDevice().isEmpty());	
+		System.out.println(".");
 	}
 
 }

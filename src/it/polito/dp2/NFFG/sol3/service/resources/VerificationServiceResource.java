@@ -2,6 +2,7 @@ package it.polito.dp2.NFFG.sol3.service.resources;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.core.Context;
@@ -34,8 +35,11 @@ public class VerificationServiceResource {
 				try{
 					return nffgService.verifyPolicies(policies);
 				} catch(Exception e) {
-					System.out.println("***************CAHTCH******************");
-					throw new InternalServerErrorException();
+					if(e.getMessage().equals("Not found")){
+						throw new NotFoundException();
+					}else{
+						throw new InternalServerErrorException();
+					}
 				}
 			}
 }
