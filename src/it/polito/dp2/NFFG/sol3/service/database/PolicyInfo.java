@@ -16,27 +16,53 @@ public class PolicyInfo {
 	private DevicesListType devices;
 
 	/* Constructor for a traversal policy */
-	public PolicyInfo(String policy_name, String nffg_name, String policy_source,String policy_destination,Boolean isPositive, DevicesListType devices){
+	public PolicyInfo(String policy_name, String nffg_name, String policy_source,String policy_destination,Boolean isPositive, DevicesListType devices, VerificationType verification){
 		this.policy_name = policy_name;
 		this.nffg_name = nffg_name;
 		this.policy_source = policy_source;
 		this.policy_destination = policy_destination;
 		this.isPositive = isPositive;
 		this.devices = devices;
+		this.verification = verification;
 	}
 
 	/* Constructor for a reachability policy */
-	public PolicyInfo(String policy_name, String nffg_name, String policy_source,String policy_destination,Boolean isPositive){
+	public PolicyInfo(String policy_name, String nffg_name, String policy_source,String policy_destination,Boolean isPositive, VerificationType verification){
 		this.policy_name = policy_name;
 		this.nffg_name = nffg_name;
 		this.policy_source = policy_source;
 		this.policy_destination = policy_destination;
 		this.isPositive = isPositive;
+		this.verification = verification;
 	}
 
 	public void setVerification(VerificationType verification){
 		this.verification = verification;
 	}
+	public void setName(String policy_name){
+		this.policy_name = policy_name;
+	}
+
+	public void setNffg(String nffg_name){
+		this.nffg_name = nffg_name;
+	}
+
+	public void setSource(String policy_source){
+		this.policy_source = policy_source;
+	}
+
+	public void setDestination(String policy_destination){
+		this.policy_destination = policy_destination;
+	}
+
+	public void setIsPositive(Boolean isPositive){
+		this.isPositive = isPositive;
+	}
+
+	public void setDevices(DevicesListType devices){
+		this.devices = devices;
+	}
+	
 	public String getName(){
 		return this.policy_name;
 	}

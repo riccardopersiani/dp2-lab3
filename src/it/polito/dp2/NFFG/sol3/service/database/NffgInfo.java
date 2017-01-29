@@ -7,6 +7,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import it.polito.dp2.NFFG.sol3.service.jaxb.NFFG;
+import it.polito.dp2.NFFG.sol3.service.jaxb.ReachabilityPolicyType;
+import it.polito.dp2.NFFG.sol3.service.jaxb.TraversalPolicyType;
+
+
 
 public class NffgInfo {
 	private String name;
@@ -50,7 +54,25 @@ public class NffgInfo {
 		return belongs;
 	}
 
-	public synchronized void deleteReachabilityPolicyFromNffg(String policyName){
+	public ReachabilityPolicyType getReachabilityPolicyFromNffg(String policyName){
+		for(int i=0; i<nffg.getPolicies().getReachabilityPolicy().size(); i++){
+			if(nffg.getPolicies().getReachabilityPolicy().get(i).getName().equals(policyName)){
+				return nffg.getPolicies().getReachabilityPolicy().get(i);
+			}
+		}
+		return null;
+	}
+	
+	public TraversalPolicyType getTraversalPolicyFromNffg(String policyName){
+		for(int i=0; i<nffg.getPolicies().getTraversalPolicy().size(); i++){
+			if(nffg.getPolicies().getTraversalPolicy().get(i).getName().equals(policyName)){
+				return nffg.getPolicies().getTraversalPolicy().get(i);
+			}
+		}
+		return null;
+	}
+	
+	public void deleteReachabilityPolicyFromNffg(String policyName){
 		for(int i=0; i<nffg.getPolicies().getReachabilityPolicy().size(); i++){
 			if(nffg.getPolicies().getReachabilityPolicy().get(i).getName().equals(policyName)){
 				nffg.getPolicies().getReachabilityPolicy().remove(i);
@@ -58,12 +80,21 @@ public class NffgInfo {
 		}
 	}
 
-	public synchronized void deleteTraversalPolicyFromNffg(String policyName){
+	public void deleteTraversalPolicyFromNffg(String policyName){
 		for(int i=0; i<nffg.getPolicies().getTraversalPolicy().size(); i++){
 			if(nffg.getPolicies().getTraversalPolicy().get(i).getName().equals(policyName)){
 				nffg.getPolicies().getTraversalPolicy().remove(i);
 			}
 		}
+	}
+	
+	public boolean isReachabilityPolicy(String policyName){
+		for(int i=0; i<nffg.getPolicies().getReachabilityPolicy().size();i++){
+			if(nffg.getPolicies().getReachabilityPolicy().get(i).getName().equals(policyName)){
+				return true;
+			}
+		}	
+		return false;
 	}
 	
 	public boolean isTraversalPolicy(String policyName){

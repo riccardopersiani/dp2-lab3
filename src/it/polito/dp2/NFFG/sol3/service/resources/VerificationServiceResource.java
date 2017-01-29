@@ -22,7 +22,6 @@ public class VerificationServiceResource {
 	// Create an instance of the object that can execute operations
 			NffgService nffgService = new NffgService();
 
-			//TODO
 			@PUT 
 			@ApiOperation ( value = "Verify one or more policies already stored", notes = "xml format")
 			@ApiResponses(value = {

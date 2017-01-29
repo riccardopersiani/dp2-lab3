@@ -1,5 +1,7 @@
 package it.polito.dp2.NFFG.sol3.service.resources;
 
+import java.net.URI;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
@@ -11,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -23,7 +26,6 @@ import it.polito.dp2.NFFG.sol3.service.jaxb.Nffgs;
 
 @Path("/nffgs")
 public class NffgsResource {
-
 	NffgService nffgService = new NffgService();
 
 	@GET
@@ -64,14 +66,18 @@ public class NffgsResource {
 	@POST 
 	@ApiOperation ( value = "load a new nffg object", notes = "xml format")
 	@ApiResponses(value = {
-			@ApiResponse (code = 200, message = "0K"),
+			@ApiResponse (code = 201, message = "Created"),
 			@ApiResponse (code = 409, message = "Conflict"),
 			@ApiResponse (code = 500, message = "Internal Server Error")
 	})
 	@Consumes(MediaType.APPLICATION_XML)
+	@Produces(MediaType.APPLICATION_XML)
 	public Response createNffgXML(NFFG nffg, @Context UriInfo uriInfo) {
 		try{
-			nffgService.LoadOneNffgOnNeo4J(nffg);
+			NFFG created = nffgService.LoadOneNffgOnNeo4J(nffg);
+			UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+        	URI u = builder.path(created.getName()).build();
+        	return Response.created(u).build();
 		} catch(Exception e) {
 			if(e.getMessage().equals("Nffg already stored")){
 				return Response.status(Response.Status.CONFLICT).build();
@@ -79,6 +85,5 @@ public class NffgsResource {
 				throw new InternalServerErrorException();
 			}
 		} 
-		return Response.ok().build();
 	}
 }

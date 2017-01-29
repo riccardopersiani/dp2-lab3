@@ -1,5 +1,7 @@
 package it.polito.dp2.NFFG.sol3.service.resources;
 
+import java.net.URI;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -9,9 +11,11 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -47,30 +51,43 @@ public class PoliciesResource {
 		}
 	
 		@POST 
-		@ApiOperation ( value = "create a new reachability policy object", notes = "xml format")
+		@ApiOperation ( value = "create a new policy object", notes = "xml format")
 		@ApiResponses(value = {
-				@ApiResponse (code = 200, message = "0K"),
+				@ApiResponse (code = 204, message = "No Content"),
+				@ApiResponse (code = 201, message = "Created"),
 				@ApiResponse(code = 404, message = "Not Found"),
 				@ApiResponse (code = 500, message = "Internal Server Error")
 		})
 		@Consumes(MediaType.APPLICATION_XML)
+		@Produces(MediaType.APPLICATION_XML)
 		public Response postPolicyXML(Policy policy, @Context UriInfo uriInfo) {
 			try{
-				nffgService.addNewPolicy(policy);
+				Policy created = nffgService.addNewPolicy(policy);
+				URI u = null;
+				if(created == null){
+					return Response.noContent().build();
+				}
+				UriBuilder builder = uriInfo.getAbsolutePathBuilder();
+				if(created.getTraversalPolicy() != null){
+					u = builder.path(created.getTraversalPolicy().getName()).build();		
+				}else{				
+					u = builder.path(created.getReachabilityPolicy().getName()).build();
+				}
+	        	return Response.created(u).build();
+
 			} catch(Exception e) {
-				if(e.getMessage().equals("Nffg Not found")){
+				if(e.getMessage().equals("Not found")){
 					return Response.status(Response.Status.NOT_FOUND).build();
 				}else{
 					throw new InternalServerErrorException();
 				}
 			}
-			return Response.ok().build();
 		}		
 		
 		@PUT
 		@ApiOperation ( value = "update a reachability policy", notes = "xml format")
 		@ApiResponses(value = {
-				@ApiResponse (code = 200, message = "0K"),
+				@ApiResponse (code = 204, message = "No Content"),
 				@ApiResponse(code = 404, message = "Not Found"),
 				@ApiResponse (code = 500, message = "Internal Server Error")
 		})
@@ -85,7 +102,7 @@ public class PoliciesResource {
 					throw new InternalServerErrorException();
 				}
 			}
-			return Response.ok().build();
+			return Response.noContent().build();
 		}
 		
 		@DELETE
