@@ -13,14 +13,14 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
-import it.polito.dp2.NFFG.sol3.service.NffgService;
+import it.polito.dp2.NFFG.sol3.service.NffgServiceVerification;
 import it.polito.dp2.NFFG.sol3.service.jaxb.PoliciesToBeVerified;
 import it.polito.dp2.NFFG.sol3.service.jaxb.PoliciesVerified;
 
 @Path("/verification")
 public class VerificationServiceResource {
 	// Create an instance of the object that can execute operations
-			NffgService nffgService = new NffgService();
+			NffgServiceVerification nffgServiceVerification = new NffgServiceVerification();
 
 			@PUT 
 			@ApiOperation ( value = "Verify one or more policies already stored", notes = "xml format")
@@ -32,7 +32,7 @@ public class VerificationServiceResource {
 			@Consumes(MediaType.APPLICATION_XML)
 			public PoliciesVerified verifyPolicies(PoliciesToBeVerified policies, @Context UriInfo uriInfo) throws Exception {
 				try{
-					return nffgService.verifyPolicies(policies);
+					return nffgServiceVerification.verifyPolicies(policies);
 				} catch(Exception e) {
 					if(e.getMessage().equals("Not found")){
 						throw new NotFoundException();

@@ -26,19 +26,11 @@ import it.polito.dp2.NFFG.sol3.service.jaxb.LinkType;
 import it.polito.dp2.NFFG.sol3.service.jaxb.NFFG;
 import it.polito.dp2.NFFG.sol3.service.jaxb.Nffgs;
 import it.polito.dp2.NFFG.sol3.service.jaxb.NodeType;
-import it.polito.dp2.NFFG.sol3.service.jaxb.PoliciesToBeVerified;
-import it.polito.dp2.NFFG.sol3.service.jaxb.PoliciesVerified;
-import it.polito.dp2.NFFG.sol3.service.jaxb.Policy;
 import it.polito.dp2.NFFG.sol3.service.jaxb.ReachabilityPolicyType;
-import it.polito.dp2.NFFG.sol3.service.jaxb.ReachabilityPolicyType2;
 import it.polito.dp2.NFFG.sol3.service.jaxb.TraversalPolicyType;
-import it.polito.dp2.NFFG.sol3.service.jaxb.TraversalPolicyType2;
-import it.polito.dp2.NFFG.sol3.service.jaxb.VerificationType;
 import it.polito.dp2.NFFG.sol3.service.neo4j.Labels;
 import it.polito.dp2.NFFG.sol3.service.neo4j.Node;
 import it.polito.dp2.NFFG.sol3.service.neo4j.ObjectFactory;
-import it.polito.dp2.NFFG.sol3.service.neo4j.Path;
-import it.polito.dp2.NFFG.sol3.service.neo4j.Paths;
 import it.polito.dp2.NFFG.sol3.service.neo4j.Property;
 import it.polito.dp2.NFFG.sol3.service.neo4j.Relationship;
 
@@ -46,7 +38,7 @@ public class NffgService {
 
 	/** Add a policy in the PoliciesDB and in the NffgsDB 
 	 * @throws Exception **/
-	public Policy addNewPolicy(Policy policy_to_add) throws Exception {
+	/*public Policy addNewPolicy(Policy policy_to_add) throws Exception {
 		try{
 			// Check if the policy to be added is a Reachability Policy
 			if(policy_to_add.getTraversalPolicy() == null){
@@ -107,7 +99,7 @@ public class NffgService {
 		}catch(RuntimeException e){
 			throw new Exception("Internal Server Error");
 		}
-	}
+	}*/
 
 	/** Add the selected nffg on Neo4J and add the selected nffg and its relative policies in the cache 
 	 * @return 
@@ -285,7 +277,7 @@ public class NffgService {
 
 	/** Update the selected policy in NffgsDb and PoliciesDB 
 	 * @throws Exception **/
-	public void updatePolicy(Policy policy_to_update) throws Exception {
+	/*public void updatePolicy(Policy policy_to_update) throws Exception {
 		ReachabilityPolicyType2 reachability_policy = policy_to_update.getReachabilityPolicy();
 		try{
 			if(reachability_policy != null){
@@ -323,12 +315,12 @@ public class NffgService {
 		}catch (RuntimeException e) {
 			throw new Exception("Internal Server Error");
 		}
-	}
+	}*/
 
 
 	/** Delete the selected policy in NffgsDB and PoliciesDB
 	 * @throws Exception **/
-	public void deleteOnePolicy(String policyName) throws Exception{
+	/*public void deleteOnePolicy(String policyName) throws Exception{
 
 		// Check if the policy is not in the PolicyDB
 		if(PoliciesDB.getPolicy(policyName) == null){
@@ -358,9 +350,7 @@ public class NffgService {
 				}
 			}	
 		}
-
-
-	}
+	}*/
 
 	/** Get all the Nffgs stored in the database 
 	 * @throws Exception **/
@@ -417,7 +407,7 @@ public class NffgService {
 
 
 	/** Verify the list of policies specified **/
-	public PoliciesVerified verifyPolicies(PoliciesToBeVerified policies) throws Exception {	
+	/*public PoliciesVerified verifyPolicies(PoliciesToBeVerified policies) throws Exception {	
 		// Get the list of the names of the policies to be verified 
 		List<String> policies_to_verify = policies.getName();
 
@@ -446,12 +436,12 @@ public class NffgService {
 			}
 		}
 		return policies_to_be_returned;
-	}
+	}*/
 
 
 	/** Send the policy verification requedt to Neo4J
 	 * @throws Exception **/
-	public PolicyInfo sendPolicyVerification(String policy_name) throws Exception{
+	/*public PolicyInfo sendPolicyVerification(String policy_name) throws Exception{
 		try{
 			// Take the list of all policiesS
 			PolicyInfo policyInfo = PoliciesDB.getPolicy(policy_name);
@@ -463,13 +453,20 @@ public class NffgService {
 
 			// Send the data to be verified to Neo4J
 			WebTarget target = createTarget();
-			Paths response3 = (Paths) target.path("resource")
+			Response responseTest = target.path("resource")
 					.path("node")
 					.path(sourceNodeID)
 					.path("paths")
 					.queryParam("dst", destiantionNodeID)
 					.request()
-					.get(Paths.class);
+					.get(Response.class);
+
+			if(responseTest.getStatus() >= 400){
+				System.err.println("sendPolicyVerification - responseTest status: " + responseTest.getStatus());
+				throw new Exception("Internal Server Error");
+			}
+
+			Paths response3 = responseTest.readEntity(Paths.class);
 
 			List<Path> pathList = response3.getPath();
 
@@ -691,7 +688,7 @@ public class NffgService {
 		} catch(RuntimeException e){
 			throw new Exception("Internal Server Error");
 		}
-	}
+	}*/
 
 	/** Convert from type Calendar to XMLGregorialCalendar**/
 	public XMLGregorianCalendar calendarToXMLGregorianCalendar(Calendar calendar) {
@@ -722,7 +719,7 @@ public class NffgService {
 	}
 
 	/** Get the Policy specified in the request**/	
-	public Policy getPolicy(String policyID) throws Exception {
+	/*public Policy getPolicy(String policyID) throws Exception {
 		try{
 		PolicyInfo policyInfo = PoliciesDB.getPolicy(policyID);
 		if(policyInfo == null){
@@ -739,7 +736,7 @@ public class NffgService {
 		} catch(RuntimeException e){
 			throw new Exception("Internal Servier Error");
 		}
-	}
+	}*/
 
 
 	/** Create the target **/

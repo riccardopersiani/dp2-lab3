@@ -22,13 +22,13 @@ import com.wordnik.swagger.annotations.ApiOperation;
 import com.wordnik.swagger.annotations.ApiResponse;
 import com.wordnik.swagger.annotations.ApiResponses;
 
-import it.polito.dp2.NFFG.sol3.service.NffgService;
+import it.polito.dp2.NFFG.sol3.service.NffgServicePoliciesManagment;
 import it.polito.dp2.NFFG.sol3.service.jaxb.Policy;
 
 @Path("/policies")
 public class PoliciesResource {
 	// Create an instance of the object that can execute operations
-		NffgService nffgService = new NffgService();
+		NffgServicePoliciesManagment nffgServicePoliciesManagment = new NffgServicePoliciesManagment();
 		
 		@GET
 		@Path("{PolicyID}")
@@ -40,7 +40,7 @@ public class PoliciesResource {
 		})
 		public Policy getPolicy(@PathParam("PolicyID") String PolicyID) {
 			try{
-				return nffgService.getPolicy(PolicyID);
+				return nffgServicePoliciesManagment.getPolicy(PolicyID);
 			} catch(Exception e) {
 				if(e.getMessage().equals("Not found")){
 					throw new NotFoundException();
@@ -62,7 +62,7 @@ public class PoliciesResource {
 		@Produces(MediaType.APPLICATION_XML)
 		public Response postPolicyXML(Policy policy, @Context UriInfo uriInfo) {
 			try{
-				Policy created = nffgService.addNewPolicy(policy);
+				Policy created = nffgServicePoliciesManagment.addNewPolicy(policy);
 				URI u = null;
 				if(created == null){
 					return Response.noContent().build();
@@ -94,7 +94,7 @@ public class PoliciesResource {
 		@Consumes(MediaType.APPLICATION_XML)
 		public Response updatePolicyXML(Policy policy, @Context UriInfo uriInfo) {
 			try{
-				nffgService.updatePolicy(policy);
+				nffgServicePoliciesManagment.updatePolicy(policy);
 			} catch(Exception e) {
 				if(e.getMessage().equals("Not found")){
 					throw new NotFoundException();
@@ -115,7 +115,7 @@ public class PoliciesResource {
 		})
 		public Response deleteOnePolicy(@PathParam("PolicyID") String PolicyID) {
 			try{
-				nffgService.deleteOnePolicy(PolicyID);
+				nffgServicePoliciesManagment.deleteOnePolicy(PolicyID);
 			} catch(Exception e) {
 				if(e.getMessage().equals("Not found")){
 					return Response.status(Response.Status.NOT_FOUND).build();

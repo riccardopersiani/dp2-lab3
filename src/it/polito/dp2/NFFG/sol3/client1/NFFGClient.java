@@ -67,21 +67,24 @@ public class NFFGClient implements it.polito.dp2.NFFG.lab3.NFFGClient {
 					.request(MediaType.APPLICATION_XML)
 					.post(Entity.entity(NFFG, MediaType.APPLICATION_XML));
 
-			if(response.getStatus() == 500){
-				throw new ServiceException();
-			}
-			if(response.getStatus() == 400){
-				throw new ServiceException();
-			}
 			if(response.getStatus() == 409){
+				System.err.println("loadNFFG - response status 409: AlreadyLoadedException");
 				throw new AlreadyLoadedException();
 			}
-			if(response.getStatus() == 404){		
+			if(response.getStatus() == 404){	
+				System.err.println("loadNFFG - response status 404: UnknownNameException");
 				throw new UnknownNameException();
 			}
-		}catch (NffgVerifierException e) {
+			if(response.getStatus() >= 400){
+				System.err.println("loadNFFG - response status >= 400: ServiceException! Neo4j could be not running");
+				throw new ServiceException();
+			}
+			
+		} catch (NffgVerifierException e) {
+			System.err.println("loadNFFG - NffgVerifierException");
 			throw new ServiceException();
 		} catch (RuntimeException e){
+			System.err.println("loadNFFG - RuntimeException");
 			throw new ServiceException();
 		}
 
@@ -99,12 +102,15 @@ public class NFFGClient implements it.polito.dp2.NFFG.lab3.NFFGClient {
 				try {
 					loadNFFG(nfr.getName());
 				} catch (UnknownNameException e) {
+					System.err.println("loadAll - ServiceException");
 					throw new ServiceException();
 				} catch (AlreadyLoadedException e) {
+					System.err.println("loadAll - AlreadyLoadedException");
 					throw new AlreadyLoadedException();
 				}			
 			}
 		}catch(NffgVerifierException e){
+			System.err.println("loadAll - NffgVerifierException");
 			throw new ServiceException();
 		} 
 	}
@@ -130,27 +136,31 @@ public class NFFGClient implements it.polito.dp2.NFFG.lab3.NFFGClient {
 				.request(MediaType.APPLICATION_XML)
 				.post(Entity.entity(policy, MediaType.APPLICATION_XML));
 
-		if(response.getStatus() == 500){
-			throw new ServiceException();
-		}
-
-		if(response.getStatus() == 404){		
+		if(response.getStatus() == 404){	
+			System.err.println("loadReachabilityPolicy response 404 - UnknownNameException");
 			throw new UnknownNameException();
 		}
 		
-		if(response.getStatus() == 409){	
+		if(response.getStatus() == 409){
 			WebTarget target2 = Util.createClientTarget();		
 			Response response2 =  target2.path("policies")
 					.request(MediaType.APPLICATION_XML)
 					.put(Entity.entity(policy, MediaType.APPLICATION_XML));
-			
-			if(response2.getStatus() == 500){
-				throw new ServiceException();
-			}
 
 			if(response2.getStatus() == 404){		
+				System.err.println("loadReachabilityPolicy response2 404 - UnknownNameException");
 				throw new UnknownNameException();
 			}
+			
+			if(response2.getStatus() >= 400){	
+				System.err.println("loadReachabilityPolicy response2 >= 400 - ServiceException");
+				throw new ServiceException();
+			}
+		}
+		
+		if(response.getStatus() >= 400){	
+			System.err.println("loadReachabilityPolicy response >= 400 - ServiceException");
+			throw new ServiceException();
 		}
 	}
 
@@ -166,14 +176,17 @@ public class NFFGClient implements it.polito.dp2.NFFG.lab3.NFFGClient {
 					.delete();
 			
 			if(response.getStatus() == 404){
+				System.err.println("unloadReachabilityPolicy response 404 - UnknownNameException");
 				throw new UnknownNameException();
 			}
 			
-			if(response.getStatus() == 500){
+			if(response.getStatus() >= 400){
+				System.err.println("unloadReachabilityPolicy response >= 400 - ServiceException");
 				throw new ServiceException();
 			}
 			
 		}catch(RuntimeException e){
+			System.err.println("unloadReachabilityPolicy - RuntimeException");
 			throw new ServiceException();
 		}
 		
@@ -187,20 +200,29 @@ public class NFFGClient implements it.polito.dp2.NFFG.lab3.NFFGClient {
 
 			// Send the PUT request to the NffgService in order to test the reachability policy
 			WebTarget target = Util.createClientTarget();		
-			PoliciesVerified response = target.path("verification")
+			Response response1 = target.path("verification")
 					.request(MediaType.APPLICATION_XML)
-					.put(Entity.entity(policy_to_be_verified, MediaType.APPLICATION_XML),PoliciesVerified.class);
+					.put(Entity.entity(policy_to_be_verified, MediaType.APPLICATION_XML),Response.class);
 			
+			// Check if the server reply is correct and if neo4j is running
+			if(response1.getStatus() >= 400){
+				System.err.println("testReachabilityPolicy - response1 status:" + response1.getStatus());
+				throw new ServiceException();
+			}
+			
+			PoliciesVerified response = response1.readEntity(PoliciesVerified.class);
+			
+			// Traversal Policy
 			if(response.getTraversalPolicy().isEmpty() == false){
 				TraversalPolicyType2 tp = new ObjectFactory().createTraversalPolicyType2();
 				tp = response.getTraversalPolicy().get(0);
 					if(tp.getVerification().isResult() == true){
 						return true;
-					}				
-					else{
+					} else{
 						return false;
 					}
 			}
+			// Reachability Policy
 			else{
 				if(response.getReachabilityPolicy().isEmpty() == true){
 					throw new UnknownNameException();
@@ -208,12 +230,12 @@ public class NFFGClient implements it.polito.dp2.NFFG.lab3.NFFGClient {
 				ReachabilityPolicyType2 rp = response.getReachabilityPolicy().get(0);
 					if(rp.getVerification().isResult() == true){
 						return true;
-					}		
-					else{
+					} else{
 						return false;
 					}				
 			}
 		}catch(RuntimeException e){
+			System.err.println("testReachabilityPolicy - RuntimeException");
 			throw new ServiceException();
 		}
 	}
