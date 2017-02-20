@@ -74,7 +74,7 @@ public class NffgsResource {
 	@Produces(MediaType.APPLICATION_XML)
 	public Response createNffgXML(NFFG nffg, @Context UriInfo uriInfo) {
 		try{
-			NFFG created = nffgService.LoadOneNffgOnNeo4J(nffg);
+			NFFG created = nffgService.loadOneNffgOnNeo4J(nffg);
 			UriBuilder builder = uriInfo.getAbsolutePathBuilder();
         	URI u = builder.path(created.getName()).build();
         	return Response.created(u).build();

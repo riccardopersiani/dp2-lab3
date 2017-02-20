@@ -7,12 +7,14 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Response;
 
 import it.polito.dp2.NFFG.NffgReader;
 import it.polito.dp2.NFFG.NffgVerifierException;
 import it.polito.dp2.NFFG.PolicyReader;
 import it.polito.dp2.NFFG.ReachabilityPolicyReader;
 import it.polito.dp2.NFFG.TraversalPolicyReader;
+import it.polito.dp2.NFFG.lab3.ServiceException;
 import it.polito.dp2.NFFG.sol3.client2.nffgservice.NFFG;
 import it.polito.dp2.NFFG.sol3.client2.nffgservice.Nffgs;
 import it.polito.dp2.NFFG.sol3.client2.nffgservice.ObjectFactory;
@@ -31,7 +33,7 @@ public class NffgVerifier implements it.polito.dp2.NFFG.NffgVerifier {
 	private Map<NffgReader,Set<PolicyReader>> nffgPoliciesMap; // Contains the map of all policies for every nffg
 
 
-	public NffgVerifier() throws NffgVerifierException{
+	public NffgVerifier() throws ServiceException{
 		nffgReaders = new HashSet<NffgReader>();
 		policyReaders = new HashSet<PolicyReader>();
 		nffgPoliciesMap = new HashMap<NffgReader,Set<PolicyReader>>();
@@ -40,9 +42,16 @@ public class NffgVerifier implements it.polito.dp2.NFFG.NffgVerifier {
 		try{
 			// Perform the GET to NffgService in order to obtains all the Nffgs
 			WebTarget target = Util.createClient2Target();	
-			nffgs =  target.path("nffgs")
+			Response responseNffgs =  target.path("nffgs")
 					.request()
-					.get(Nffgs.class);
+					.get(Response.class);
+			
+			if(responseNffgs.getStatus() >= 400){
+				System.err.println("NffgVerifer - Error: " + responseNffgs.getStatus() + "throw new ServiceException()");
+				throw new NffgVerifierException();
+			}
+			
+			nffgs = responseNffgs.readEntity(Nffgs.class);
 
 			for(NFFG nffg : nffgs.getNFFG()){
 				oneNffgPolicies = new HashSet<PolicyReader>();
@@ -64,7 +73,8 @@ public class NffgVerifier implements it.polito.dp2.NFFG.NffgVerifier {
 				nffgPoliciesMap.put(nffgReader, oneNffgPolicies);
 			}	
 		} catch (Exception e){
-			throw new NffgVerifierException();
+			System.err.println("NffgVerifer - RuntimeException - throw new ServiceException()");
+			throw new ServiceException();
 		}
 	}
 

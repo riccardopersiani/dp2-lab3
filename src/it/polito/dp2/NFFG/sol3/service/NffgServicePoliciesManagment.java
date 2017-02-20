@@ -18,18 +18,21 @@ public class NffgServicePoliciesManagment {
 			if(policy_to_add.getTraversalPolicy() == null){
 
 				// Check if there is a ReachabilityPolicy
-				if(policy_to_add.getReachabilityPolicy() == null)
+				if(policy_to_add.getReachabilityPolicy() == null){
+					System.err.println("PoliciesManagment-addNewPolicy - Policy passed not found: Exception(\"Not found\")");
 					throw new Exception("Not found"); 
-
+				}
 				// Create a new ReachabilityPolicy
 				ReachabilityPolicyType2 reachability_policy = policy_to_add.getReachabilityPolicy();
 
 				// Check if the nffg inside Reachability Policy exists, if no do not add it
 				if(NffgsDB.getNffgMap().containsKey(reachability_policy.getNffg()) == false){
+					System.err.println("PoliciesManagment-addNewPolicy - Nffg inside ReachabilityPolicy not found: Exception(\"Not found\")");
 					throw new Exception("Not found"); 
 				} 
 
-				if(NffgsDB.getNffgMap().get(reachability_policy.getNffg()).isReachabilityPolicy(reachability_policy.getName())== true){
+				if(NffgsDB.getNffgMap().get(reachability_policy.getNffg()).isReachabilityPolicy(reachability_policy.getName()) == true){
+					System.err.println("PoliciesManagment-addNewPolicy - ReachabilityPolicy is already in the DB -> updatePolicy()");
 					updatePolicy(policy_to_add);
 					return null;
 				}else{
@@ -51,10 +54,12 @@ public class NffgServicePoliciesManagment {
 
 				// Check if the nffg inside Traversal Policy exists, if no do not add it
 				if(NffgsDB.getNffgMap().containsKey(traversal_policy.getNffg()) == false){
+					System.err.println("PoliciesManagment-addNewPolicy - Nffg inside TraversalPolicy not found: Exception(\"Not found\")");
 					throw new Exception("Not found"); 
 				}	
 
 				if(NffgsDB.getNffgMap().get(traversal_policy.getNffg()).isTraversalPolicy(traversal_policy.getName())== true){
+					System.err.println("PoliciesManagment-addNewPolicy - TraversalPolicy is already in the DB -> updatePolicy()");
 					updatePolicy(policy_to_add);
 					return null;
 				}else{
@@ -71,6 +76,7 @@ public class NffgServicePoliciesManagment {
 				}
 			}
 		}catch(RuntimeException e){
+			System.err.println("PoliciesManagment - addNewPolicy - RuntimeException(\"Internal Server Error\")");
 			throw new Exception("Internal Server Error");
 		}
 	}
@@ -84,14 +90,15 @@ public class NffgServicePoliciesManagment {
 				// Reachability Policy Update
 				// Check if the nffg exist
 				if(NffgsDB.getNffgMap().get(reachability_policy.getNffg()) == null){
+					System.err.println("PoliciesManagment-updatePolicy - Nffg inside ReachabilityPolicy not found: Exception(\"Not found\")");
 					throw new Exception("Not found");
 				}
 				// Check if the policy exists
 				if(NffgsDB.getNffgMap().get(reachability_policy.getNffg()).getReachabilityPolicyFromNffg(reachability_policy.getName())==null){
+					System.err.println("PoliciesManagment-updatePolicy - ReachabilityPolicy passed not found: Exception(\"Not found\")");
 					throw new Exception("Not found");
 				}
 				synchronized (NffgsDB.getNffgMap()){
-					// TODO test with Sleep(10);
 					NffgsDB.updateReachabilityPolicy(reachability_policy, reachability_policy.getNffg());
 					PoliciesDB.updatePolicy(policy_to_update);
 				}
@@ -101,10 +108,12 @@ public class NffgServicePoliciesManagment {
 				TraversalPolicyType2 traversal_policy = policy_to_update.getTraversalPolicy();
 
 				if(NffgsDB.getNffgMap().get(traversal_policy.getNffg()) == null){
+					System.err.println("PoliciesManagment-updatePolicy - Nffg inside TraversalPolicy not found: Exception(\"Not found\")");
 					throw new Exception("Not found");
 				}
 				// Check if the policy exists
 				if(NffgsDB.getNffgMap().get(traversal_policy.getNffg()).getTraversalPolicyFromNffg(traversal_policy.getName())==null){
+					System.err.println("PoliciesManagment-updatePolicy - TraversalPolicy passed not found: Exception(\"Not found\")");
 					throw new Exception("Not found");
 				}
 				synchronized (NffgsDB.getNffgMap()){
@@ -113,6 +122,7 @@ public class NffgServicePoliciesManagment {
 				}
 			}
 		}catch (RuntimeException e) {
+			System.err.println("PoliciesManagment - updatePolicy - RuntimeException(\"Internal Server Error\")");
 			throw new Exception("Internal Server Error");
 		}
 	}
@@ -123,6 +133,7 @@ public class NffgServicePoliciesManagment {
 
 		// Check if the policy is not in the PolicyDB
 		if(PoliciesDB.getPolicy(policyName) == null){
+			System.err.println("PoliciesManagment-deleteOnePolicy - Policy passed not found: Exception(\"Not found\")");
 			throw new Exception("Not found");
 		}
 
@@ -130,8 +141,8 @@ public class NffgServicePoliciesManagment {
 		PolicyInfo policyInfo = PoliciesDB.getPolicy(policyName);
 		NffgInfo nffgInfo = NffgsDB.getNffgMap().get(policyInfo.getNffg());
 
-		// Check if the policy is reachable
 		for(int i =0; i<nffgInfo.getNffg().getPolicies().getReachabilityPolicy().size(); i++){
+			// Check if the policy is Reachability
 			if(nffgInfo.getNffg().getPolicies().getReachabilityPolicy().get(i).getName().equals(policyName)){
 				synchronized(NffgsDB.getNffgMap()){
 					// Delete Reachability policy in NffgsDB
@@ -140,6 +151,7 @@ public class NffgServicePoliciesManagment {
 					PoliciesDB.deletePolicy(policyName);
 				}
 			}
+			// Check if the policy is Traversal
 			else{
 				synchronized(NffgsDB.getNffgMap()){
 					// Delete Traversal policy in NffgsDB
@@ -156,6 +168,7 @@ public class NffgServicePoliciesManagment {
 		try{
 		PolicyInfo policyInfo = PoliciesDB.getPolicy(policyID);
 		if(policyInfo == null){
+			System.err.println("PoliciesManagment-getPolicy - Policy requested not found: Exception(\"Not found\")");
 			throw new Exception("Not found");
 		}
 		Policy policy = new it.polito.dp2.NFFG.sol3.service.jaxb.ObjectFactory().createPolicy();
@@ -167,6 +180,7 @@ public class NffgServicePoliciesManagment {
 		}
 		return policy;
 		} catch(RuntimeException e){
+			System.err.println("PoliciesManagment - getPolicy - RuntimeException(\"Internal Server Error\")");
 			throw new Exception("Internal Servier Error");
 		}
 	}
